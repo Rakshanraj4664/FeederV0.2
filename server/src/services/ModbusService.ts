@@ -9,20 +9,9 @@ class ModbusService {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
   private reconnectAttempts = 0
   private _startTime = Date.now()
-  private mockMode = false
-  private mockRegisters: Record<number, number> = {}
 
   constructor() {
     this.client = new ModbusRTU()
-    this.detectPlatform()
-  }
-
-  private detectPlatform() {
-    // On Windows without a real PLC, use mock mode
-    if (process.platform === 'win32' || CONFIG.isDevelopment) {
-      this.mockMode = true
-      logger.info('modbus', 'Mock mode enabled (development environment)')
-    }
   }
 
   get connected(): ConnectionState {
@@ -35,12 +24,6 @@ class ModbusService {
 
   async connectPLC(): Promise<boolean> {
     if (this._connected === 'connected') return true
-
-    if (this.mockMode) {
-      this._connected = 'connected'
-      logger.info('modbus', 'Mock PLC connected')
-      return true
-    }
 
     try {
       this._connected = 'connecting'
@@ -65,9 +48,7 @@ class ModbusService {
       this.reconnectTimer = null
     }
     try {
-      if (!this.mockMode) {
-        this.client.close()
-      }
+      this.client.close()
     } catch {
       // ignore
     }
@@ -76,10 +57,6 @@ class ModbusService {
   }
 
   async readRegister(address: number): Promise<number> {
-    if (this.mockMode) {
-      return this.mockRegisters[address] ?? 0
-    }
-
     if (this._connected !== 'connected') {
       throw new Error('PLC not connected')
     }
@@ -94,11 +71,6 @@ class ModbusService {
   }
 
   async writeRegister(address: number, value: number): Promise<boolean> {
-    if (this.mockMode) {
-      this.mockRegisters[address] = value
-      return true
-    }
-
     if (this._connected !== 'connected') {
       throw new Error('PLC not connected')
     }
@@ -187,7 +159,6 @@ class ModbusService {
   }
 
   async readMachineRunning(): Promise<boolean> {
-    if (this.mockMode) return true
     if (this._connected !== 'connected') return false
     try {
       const result = await this.client.readDiscreteInputs(CONFIG.REGISTERS.RUNNING_INPUT, 1)
@@ -198,7 +169,6 @@ class ModbusService {
   }
 
   async healthCheck(): Promise<boolean> {
-    if (this.mockMode) return true
     if (this._connected !== 'connected') return false
     try {
       await this.readRegister(CONFIG.REGISTERS.MODIFIER.MC1)

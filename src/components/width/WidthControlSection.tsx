@@ -37,6 +37,7 @@ export function WidthControlSection() {
   const [expandCompressStep, setExpandCompressStep] = useState(50)
   const [moveStep, setMoveStep] = useState(20)
   const [plcConnected, setPlcConnected] = useState(false)
+  const [selectedRoller, setSelectedRoller] = useState(1)
 
   const leftPlateInnerMM = leftPlateOuter + PLATE_WIDTH_MM
   const rightPlateInnerMM = rightPlateOuter - PLATE_WIDTH_MM
@@ -185,17 +186,11 @@ export function WidthControlSection() {
 
   return (
     <section className="w-full">
-      <SectionTitle
-        title="Width Control — Roller 1"
-        subtitle="Fabric sizing and plate alignment"
-      />
-
       <div>
         <GlowingCard className="p-6" active={activeAction !== null} pulse={activeAction !== null}>
           <div className="flex flex-col gap-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
               <div>
-                <p className="label-industrial">Top view — Physical layout</p>
                 <h3 className="mt-1 text-2xl font-bold text-slate-800">
                   Fabric guide & plate spacing
                 </h3>
@@ -205,6 +200,24 @@ export function WidthControlSection() {
                   }`}>
                   <span className={`w-2.5 h-2.5 rounded-full ${plcConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
                   {plcConnected ? 'PLC sync active' : 'PLC offline'}
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  {[1, 2, 3, 4].map((roller) => (
+                    <button
+                      key={roller}
+                      onClick={() => setSelectedRoller(roller)}
+                      disabled={roller !== 1}
+                      className={`rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all ${
+                        roller === selectedRoller
+                          ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-200 shadow-sm'
+                          : roller === 1
+                            ? 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 active:scale-95'
+                            : 'bg-slate-50 text-slate-300 border border-slate-200 opacity-40 cursor-not-allowed'
+                      }`}
+                    >
+                      Roller {roller}
+                    </button>
+                  ))}
                 </div>
               </div>
 

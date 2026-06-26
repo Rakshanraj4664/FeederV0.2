@@ -18,6 +18,7 @@ export function HomePage() {
   const [settingRoller, setSettingRoller] = useState<number | null>(null)
   const [conveyorSetting, setConveyorSetting] = useState(false)
   const setPlcOnline = useMachineStore((s) => s.setPlcOnline)
+  const setPiOnline = useMachineStore((s) => s.setPiOnline)
   const setWebSocketConnected = useMachineStore((s) => s.setWebSocketConnected)
   const setLatency = useMachineStore((s) => s.setLatency)
   const setRunning = useMachineStore((s) => s.setRunning)
@@ -62,6 +63,7 @@ export function HomePage() {
 
     const unsubStat = wsService.onStatus((connected) => {
       setWebSocketConnected(connected)
+      setPiOnline(connected)
       if (connected) {
         toast('success', 'WebSocket connected')
       } else {

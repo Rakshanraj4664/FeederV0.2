@@ -77,13 +77,7 @@ function broadcast(data: string): void {
 async function start() {
   logger.info('system', `Server starting on port ${CONFIG.PORT}...`)
 
-  // Connect to PLC
-  await modbusService.connectPLC()
-
-  // Start polling
-  pollingService.start(broadcast)
-
-  // Start HTTP server
+  // Start HTTP server first so the web UI is available immediately
   server.listen(CONFIG.PORT, () => {
     logger.info('system', `Server listening on http://0.0.0.0:${CONFIG.PORT}`)
     console.log(`\n  Feeder HMI Server running:`)
@@ -92,6 +86,12 @@ async function start() {
     console.log(`  - WebSocket: ws://localhost:${CONFIG.PORT}/ws`)
     console.log(`  - Mode:    ${CONFIG.isDevelopment ? 'Development' : 'Production'}\n`)
   })
+
+  // Start polling (will report plcOnline=false until PLC connects)
+  pollingService.start(broadcast)
+
+  // Connect to PLC in background (non-blocking so server starts immediately)
+  modbusService.connectPLC()
 }
 
 // Graceful shutdown
