@@ -4,6 +4,10 @@ import type { MachineState, MachineStatus } from '@/types/machine'
 interface MachineStore extends MachineState, MachineStatus {
   selectedRoller: number
   setRollerModifier: (index: number, modifier: number, speed: number) => void
+  setRollerHighModifier: (index: number, highModifier: number, highSpeed: number) => void
+  setRollerActualSpeed: (index: number, actualSpeed: number) => void
+  setConveyorValue: (value: number) => void
+  loadRollerValues: (modifiers: number[], highModifiers: number[], conveyor: number) => void
   setWidthGap: (gap: number) => void
   setWidthOffset: (offset: number) => void
   setEmergencyStop: (active: boolean) => void
@@ -18,15 +22,16 @@ interface MachineStore extends MachineState, MachineStatus {
 
 export const useMachineStore = create<MachineStore>((set) => ({
   rollers: [
-    { modifier: 0, speed: 0, enabled: true },
-    { modifier: 0, speed: 0, enabled: true },
-    { modifier: 0, speed: 0, enabled: true },
-    { modifier: 0, speed: 0, enabled: true },
+    { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
+    { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
+    { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
+    { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
   ],
   widthGap: 800,
   widthOffset: 0,
   emergencyStop: false,
   running: false,
+  conveyorValue: 0,
   selectedRoller: 0,
   plcOnline: false,
   piOnline: false,
@@ -39,6 +44,37 @@ export const useMachineStore = create<MachineStore>((set) => ({
       const rollers = [...state.rollers]
       rollers[index] = { ...rollers[index], modifier, speed }
       return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
+    }),
+
+  setRollerHighModifier: (index, highModifier, highSpeed) =>
+    set((state) => {
+      const rollers = [...state.rollers]
+      rollers[index] = { ...rollers[index], highModifier, highSpeed }
+      return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
+    }),
+
+  setRollerActualSpeed: (index, actualSpeed) =>
+    set((state) => {
+      const rollers = [...state.rollers]
+      rollers[index] = { ...rollers[index], actualSpeed }
+      return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
+    }),
+
+  setConveyorValue: (value) => set({ conveyorValue: value, lastUpdate: new Date().toISOString() }),
+
+  loadRollerValues: (modifiers, highModifiers, conveyor) =>
+    set((state) => {
+      const rollers = [...state.rollers] as MachineStore['rollers']
+      for (let i = 0; i < 4; i++) {
+        rollers[i] = {
+          ...rollers[i],
+          modifier: modifiers[i],
+          highModifier: highModifiers[i],
+          speed: modifiers[i] * 32010,
+          highSpeed: highModifiers[i] * 32010,
+        }
+      }
+      return { rollers, conveyorValue: conveyor, lastUpdate: new Date().toISOString() }
     }),
 
   setWidthGap: (gap) => set({ widthGap: gap, lastUpdate: new Date().toISOString() }),

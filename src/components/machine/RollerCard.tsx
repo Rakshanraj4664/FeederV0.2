@@ -1,64 +1,95 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 
 interface RollerCardProps {
   axis: number
   label: string
-  register: string
-  speed: number
+  lowRegister: string
+  highRegister: string
+  lowSetpoint: number
+  highSetpoint: number
+  actualSpeed: number
   selected: boolean
   onSelect: () => void
-  onSpeedChange: (axis: number, speed: number) => void
+  onLowSpeedChange: (axis: number, speed: number) => void
+  onHighSpeedChange: (axis: number, speed: number) => void
+  onSetSpeed?: (axis: number) => void
+  setting?: boolean
+  editing?: boolean
 }
 
-const PRESETS = [10, 25, 50, 75, 100]
+const MAX_SPEED = 50
+const BASE_FREQ = 32010
+const MAX_ACTUAL = MAX_SPEED * BASE_FREQ
 const CIRCUMFERENCE = 251.2
+
+type GaugeMode = 'low' | 'high'
 
 export function RollerCard({
   axis,
   label,
-  register,
-  speed,
+  lowRegister,
+  highRegister,
+  lowSetpoint,
+  highSetpoint,
+  actualSpeed,
   selected,
   onSelect,
-  onSpeedChange,
+  onLowSpeedChange,
+  onHighSpeedChange,
+  onSetSpeed,
+  setting,
+  editing,
 }: RollerCardProps) {
-  const dashOffset = (speed / 100) * CIRCUMFERENCE
+  const [gaugeMode, setGaugeMode] = useState<GaugeMode>('low')
+  const displayValue = gaugeMode === 'low' ? lowSetpoint : highSetpoint
+  const dashOffset = editing
+    ? (displayValue / MAX_SPEED) * CIRCUMFERENCE
+    : Math.min(actualSpeed / MAX_ACTUAL, 1) * CIRCUMFERENCE
+  const gaugeColor = gaugeMode === 'low' ? '#06b6d4' : '#f97316'
+  const valueColor = gaugeMode === 'low' ? 'text-cyan-700' : 'text-orange-500'
 
-  const handlePreset = (v: number) => (e: React.MouseEvent) => {
+  const handleDecrement = (fn: (a: number, v: number) => void, v: number, mode: GaugeMode) => (e: React.MouseEvent) => {
     e.stopPropagation()
-    onSpeedChange(axis, v)
+    setGaugeMode(mode)
+    fn(axis, Math.max(0, v - 1))
   }
 
-  const handleDecrement = (e: React.MouseEvent) => {
+  const handleIncrement = (fn: (a: number, v: number) => void, v: number, mode: GaugeMode) => (e: React.MouseEvent) => {
     e.stopPropagation()
-    onSpeedChange(axis, Math.max(0, speed - 5))
+    setGaugeMode(mode)
+    fn(axis, Math.min(MAX_SPEED, v + 1))
   }
 
-  const handleIncrement = (e: React.MouseEvent) => {
+  const handleSlider = (fn: (a: number, v: number) => void, mode: GaugeMode) => (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
-    onSpeedChange(axis, Math.min(100, speed + 5))
+    setGaugeMode(mode)
+    fn(axis, Number(e.target.value))
   }
 
-  const handleSlider = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSet = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onSpeedChange(axis, Number(e.target.value))
+    onSetSpeed?.(axis)
   }
 
   return (
     <motion.div
       whileTap={{ scale: 0.99 }}
       onClick={onSelect}
-      className={`rounded-2xl border-2 p-4 cursor-pointer transition-all duration-200 ${
-        selected
-          ? 'border-cyan-400 bg-white shadow-[0_0_20px_rgba(6,182,212,0.1)]'
-          : 'border-slate-200/80 bg-white/80 hover:border-slate-300 shadow-sm hover:shadow-md'
+      className={`rounded-[1.75rem] border-2 p-4 transition-all duration-200 ${
+        editing
+          ? 'border-slate-200/80 bg-white/80 shadow-sm'
+          : `cursor-pointer ${selected ? 'border-cyan-400 bg-white shadow-[0_0_20px_rgba(6,182,212,0.1)]' : 'border-slate-200/80 bg-white/80 hover:border-slate-300 shadow-sm hover:shadow-md'}`
       }`}
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className={`text-sm font-bold ${selected ? 'text-cyan-700' : 'text-slate-700'}`}>
           {label}
         </h3>
-        <span className="text-[10px] font-mono text-slate-400">{register}</span>
+        <div className="flex gap-2">
+          <span className="text-[10px] font-mono text-slate-400">{lowRegister}</span>
+          <span className="text-[10px] font-mono text-slate-400">{highRegister}</span>
+        </div>
       </div>
 
       <div className="relative w-20 h-20 flex-shrink-0 mx-auto">
@@ -66,72 +97,103 @@ export function RollerCard({
           <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="6" />
           <circle
             cx="50" cy="50" r="40"
-            fill="none" stroke="#06b6d4" strokeWidth="6"
+            fill="none" stroke={gaugeColor} strokeWidth="6"
             strokeLinecap="round"
             className="transition-all duration-300"
             style={{
               strokeDasharray: `${dashOffset} ${CIRCUMFERENCE}`,
-              filter: 'drop-shadow(0 0 6px rgba(6,182,212,0.4))',
+              filter: `drop-shadow(0 0 6px ${gaugeColor}66)`,
             }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-lg font-bold font-mono tracking-tight text-slate-800">
-            {speed} <span className="text-[8px] text-slate-400 font-semibold">Hz</span>
+          <span className={`text-lg font-bold font-mono tracking-tight ${valueColor}`}>
+            {displayValue}
           </span>
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-4 mt-3">
-        <button
-          onClick={handleDecrement}
-          disabled={speed <= 0}
-          className="w-9 h-9 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all text-lg font-bold shadow-sm"
-        >
-          −
-        </button>
-        <span className="text-sm font-bold font-mono text-slate-500 min-w-[7ch] text-center">
-          {speed} Hz
-        </span>
-        <button
-          onClick={handleIncrement}
-          disabled={speed >= 100}
-          className="w-9 h-9 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all text-lg font-bold shadow-sm"
-        >
-          +
-        </button>
+      <div className="mt-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-semibold text-slate-500">Low Speed</span>
+          <span className="text-[11px] font-mono text-slate-400">{lowSetpoint}</span>
+        </div>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={handleDecrement(onLowSpeedChange, lowSetpoint, 'low')}
+            disabled={lowSetpoint <= 0}
+            className="w-7 h-7 rounded-lg bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all text-base font-bold shadow-sm"
+          >
+            −
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={MAX_SPEED}
+            step={1}
+            value={lowSetpoint}
+            onChange={handleSlider(onLowSpeedChange, 'low')}
+            className="w-full"
+            style={{
+              background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${(lowSetpoint / MAX_SPEED) * 100}%, #e2e8f0 ${(lowSetpoint / MAX_SPEED) * 100}%, #e2e8f0 100%)`,
+            }}
+          />
+          <button
+            onClick={handleIncrement(onLowSpeedChange, lowSetpoint, 'low')}
+            disabled={lowSetpoint >= MAX_SPEED}
+            className="w-7 h-7 rounded-lg bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all text-base font-bold shadow-sm"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       <div className="mt-3">
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={speed}
-          onChange={handleSlider}
-          className="w-full"
-          style={{
-            background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${speed}%, #e2e8f0 ${speed}%, #e2e8f0 100%)`,
-          }}
-        />
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-semibold text-orange-500">High Speed</span>
+          <span className="text-[11px] font-mono text-slate-400">{highSetpoint}</span>
+        </div>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={handleDecrement(onHighSpeedChange, highSetpoint, 'high')}
+            disabled={highSetpoint <= 0}
+            className="w-7 h-7 rounded-lg bg-orange-400 text-white hover:bg-orange-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all text-base font-bold shadow-sm"
+          >
+            −
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={MAX_SPEED}
+            step={1}
+            value={highSetpoint}
+            onChange={handleSlider(onHighSpeedChange, 'high')}
+            className="w-full"
+            style={{
+              background: `linear-gradient(to right, #f97316 0%, #f97316 ${(highSetpoint / MAX_SPEED) * 100}%, #e2e8f0 ${(highSetpoint / MAX_SPEED) * 100}%, #e2e8f0 100%)`,
+            }}
+          />
+          <button
+            onClick={handleIncrement(onHighSpeedChange, highSetpoint, 'high')}
+            disabled={highSetpoint >= MAX_SPEED}
+            className="w-7 h-7 rounded-lg bg-orange-400 text-white hover:bg-orange-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all text-base font-bold shadow-sm"
+          >
+            +
+          </button>
+        </div>
       </div>
 
-      <div className="mt-2 flex gap-1 flex-wrap justify-center">
-        {PRESETS.map((v) => (
+      {!editing && (
+        <div className="mt-3 flex justify-center">
           <button
-            key={v}
-            onClick={handlePreset(v)}
-            className={`px-2 py-1 rounded-lg text-[10px] font-semibold transition-all ${
-              speed === v
-                ? 'bg-cyan-500 text-white'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-            }`}
+            onClick={handleSet}
+            disabled={setting}
+            className="px-6 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold transition-all shadow-sm"
           >
-            {v}
+            {setting ? 'Setting...' : 'Set'}
           </button>
-        ))}
-      </div>
+        </div>
+      )}
     </motion.div>
   )
 }

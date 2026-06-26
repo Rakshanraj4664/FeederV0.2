@@ -1,6 +1,9 @@
 export interface RollerState {
   modifier: number
   speed: number
+  highModifier: number
+  highSpeed: number
+  actualSpeed: number
   enabled: boolean
 }
 
@@ -10,6 +13,7 @@ export interface MachineState {
   widthOffset: number
   emergencyStop: boolean
   running: boolean
+  conveyorValue: number
 }
 
 export interface MachineStatus {
@@ -18,6 +22,15 @@ export interface MachineStatus {
   websocketConnected: boolean
   lastUpdate: string
   latency: number
+}
+
+export interface Profile {
+  id: string
+  name: string
+  rollers: { modifier: number; highModifier?: number }[]
+  conveyorSpeed: number
+  createdAt: string
+  updatedAt: string
 }
 
 export const ROLLER_LABELS = ['MC1', 'MC2', 'MC3', 'MC4'] as const

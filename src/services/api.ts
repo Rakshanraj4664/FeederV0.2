@@ -37,6 +37,23 @@ export async function writeSpeed(mc: number, value: number): Promise<ApiResponse
   return data
 }
 
+export async function writeHighSpeed(mc: number, value: number): Promise<ApiResponse> {
+  const endpoint = API_ENDPOINTS[`SPEED_HIGH_MC${mc}` as keyof typeof API_ENDPOINTS]
+  const { data } = await client.post(endpoint, { value } satisfies SpeedWriteRequest)
+  return data
+}
+
+export async function setRollerSpeed(mc: number, low: number, high: number): Promise<ApiResponse> {
+  const endpoint = API_ENDPOINTS[`SPEED_SET_MC${mc}` as keyof typeof API_ENDPOINTS]
+  const { data } = await client.post(endpoint, { low, high })
+  return data
+}
+
+export async function writeConveyorSpeed(value: number): Promise<ApiResponse> {
+  const { data } = await client.post(API_ENDPOINTS.CONVEYOR, { value } satisfies SpeedWriteRequest)
+  return data
+}
+
 export async function emergencyStop(): Promise<ApiResponse> {
   const { data } = await client.post(API_ENDPOINTS.EMERGENCY)
   return data

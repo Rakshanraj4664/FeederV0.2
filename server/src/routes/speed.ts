@@ -14,6 +14,38 @@ const MC_ENDPOINTS = [
 ]
 
 MC_ENDPOINTS.forEach(({ param, axis }) => {
+  router.post(`/set/${param}`, async (req, res) => {
+    const low = validateSpeedValue(req.body.low)
+    const high = validateSpeedValue(req.body.high)
+    if (low === null || high === null) {
+      const response: ApiResponse = {
+        success: false,
+        error: `Invalid values. Must be ${CONFIG.REGISTERS.MODIFIER_MIN}-${CONFIG.REGISTERS.MODIFIER_MAX}`,
+        timestamp: new Date().toISOString(),
+      }
+      res.status(400).json(response)
+      return
+    }
+
+    try {
+      await modbusService.setRollerSpeed(axis, low, high)
+      const response: ApiResponse = {
+        success: true,
+        data: { axis: param, low, high },
+        timestamp: new Date().toISOString(),
+      }
+      res.json(response)
+    } catch (err) {
+      const response: ApiResponse = {
+        success: false,
+        error: 'Failed to set roller speed',
+        timestamp: new Date().toISOString(),
+      }
+      res.status(503).json(response)
+    }
+  })
+
+
   router.post(`/${param}`, async (req, res) => {
     const value = validateSpeedValue(req.body.value)
     if (value === null) {
@@ -43,6 +75,66 @@ MC_ENDPOINTS.forEach(({ param, axis }) => {
       res.status(503).json(response)
     }
   })
+
+  router.post(`/high/${param}`, async (req, res) => {
+    const value = validateSpeedValue(req.body.value)
+    if (value === null) {
+      const response: ApiResponse = {
+        success: false,
+        error: `Invalid value. Must be ${CONFIG.REGISTERS.MODIFIER_MIN}-${CONFIG.REGISTERS.MODIFIER_MAX}`,
+        timestamp: new Date().toISOString(),
+      }
+      res.status(400).json(response)
+      return
+    }
+
+    try {
+      await modbusService.writeAxisHighSpeed(axis, value)
+      const response: ApiResponse = {
+        success: true,
+        data: { axis: param, value, speed: value * CONFIG.REGISTERS.BASE_FREQUENCY },
+        timestamp: new Date().toISOString(),
+      }
+      res.json(response)
+    } catch (err) {
+      const response: ApiResponse = {
+        success: false,
+        error: 'Failed to write high speed',
+        timestamp: new Date().toISOString(),
+      }
+      res.status(503).json(response)
+    }
+  })
+})
+
+router.post('/conveyor', async (req, res) => {
+  const value = validateSpeedValue(req.body.value)
+  if (value === null) {
+    const response: ApiResponse = {
+      success: false,
+      error: `Invalid value. Must be ${CONFIG.REGISTERS.MODIFIER_MIN}-${CONFIG.REGISTERS.MODIFIER_MAX}`,
+      timestamp: new Date().toISOString(),
+    }
+    res.status(400).json(response)
+    return
+  }
+
+  try {
+    await modbusService.writeConveyorSpeed(value)
+    const response: ApiResponse = {
+      success: true,
+      data: { value, speed: value * CONFIG.REGISTERS.BASE_FREQUENCY },
+      timestamp: new Date().toISOString(),
+    }
+    res.json(response)
+  } catch (err) {
+    const response: ApiResponse = {
+      success: false,
+      error: 'Failed to write conveyor speed',
+      timestamp: new Date().toISOString(),
+    }
+    res.status(503).json(response)
+  }
 })
 
 router.post('/width', async (req, res) => {

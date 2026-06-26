@@ -115,21 +115,28 @@ class ModbusService {
 
   async readMachineState(): Promise<{
     mc1: number; mc2: number; mc3: number; mc4: number
+    mc1High: number; mc2High: number; mc3High: number; mc4High: number
     speed1: number; speed2: number; speed3: number; speed4: number
     widthGap: number; widthOffset: number
+    conveyor: number
   }> {
     const r = CONFIG.REGISTERS
     const mc1 = await this.readRegister(r.MODIFIER.MC1)
     const mc2 = await this.readRegister(r.MODIFIER.MC2)
     const mc3 = await this.readRegister(r.MODIFIER.MC3)
     const mc4 = await this.readRegister(r.MODIFIER.MC4)
+    const mc1High = await this.readRegister(r.HIGH_MODIFIER.MC1)
+    const mc2High = await this.readRegister(r.HIGH_MODIFIER.MC2)
+    const mc3High = await this.readRegister(r.HIGH_MODIFIER.MC3)
+    const mc4High = await this.readRegister(r.HIGH_MODIFIER.MC4)
     const speed1 = await this.readRegister(r.AXIS_SPEED.AXIS1)
     const speed2 = await this.readRegister(r.AXIS_SPEED.AXIS2)
     const speed3 = await this.readRegister(r.AXIS_SPEED.AXIS3)
     const speed4 = await this.readRegister(r.AXIS_SPEED.AXIS4)
     const widthGap = await this.readRegister(r.WIDTH.EXPAND)
     const widthOffset = await this.readRegister(r.WIDTH.CONTRACT)
-    return { mc1, mc2, mc3, mc4, speed1, speed2, speed3, speed4, widthGap, widthOffset }
+    const conveyor = await this.readRegister(r.CONVEYOR)
+    return { mc1, mc2, mc3, mc4, mc1High, mc2High, mc3High, mc4High, speed1, speed2, speed3, speed4, widthGap, widthOffset, conveyor }
   }
 
   async writeAxisSpeed(axis: number, value: number): Promise<boolean> {
@@ -143,13 +150,40 @@ class ModbusService {
     return this.writeRegister(addresses[axis - 1], Math.round(value))
   }
 
+  async writeAxisHighSpeed(axis: number, value: number): Promise<boolean> {
+    const addresses = [
+      CONFIG.REGISTERS.HIGH_MODIFIER.MC1,
+      CONFIG.REGISTERS.HIGH_MODIFIER.MC2,
+      CONFIG.REGISTERS.HIGH_MODIFIER.MC3,
+      CONFIG.REGISTERS.HIGH_MODIFIER.MC4,
+    ]
+    if (axis < 1 || axis > 4) throw new Error('Invalid axis (1-4)')
+    return this.writeRegister(addresses[axis - 1], Math.round(value))
+  }
+
+  async writeConveyorSpeed(value: number): Promise<boolean> {
+    return this.writeRegister(CONFIG.REGISTERS.CONVEYOR, Math.round(value))
+  }
+
+  async setRollerSpeed(axis: number, low: number, high: number): Promise<boolean> {
+    await this.writeAxisSpeed(axis, low)
+    await this.writeAxisHighSpeed(axis, high)
+    return true
+  }
+
   async emergencyStop(): Promise<void> {
     const r = CONFIG.REGISTERS.MODIFIER
+    const hr = CONFIG.REGISTERS.HIGH_MODIFIER
     await this.writeRegister(r.MC1, 0)
     await this.writeRegister(r.MC2, 0)
     await this.writeRegister(r.MC3, 0)
     await this.writeRegister(r.MC4, 0)
-    logger.info('plc', 'EMERGENCY STOP — all modifiers set to 0')
+    await this.writeRegister(hr.MC1, 0)
+    await this.writeRegister(hr.MC2, 0)
+    await this.writeRegister(hr.MC3, 0)
+    await this.writeRegister(hr.MC4, 0)
+    await this.writeRegister(CONFIG.REGISTERS.CONVEYOR, 0)
+    logger.info('plc', 'EMERGENCY STOP — all modifiers and conveyor set to 0')
   }
 
   async readMachineRunning(): Promise<boolean> {

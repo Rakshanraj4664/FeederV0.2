@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
@@ -6,22 +6,29 @@ import { StatusBar } from '@/components/layout/StatusBar'
 import { RollerSpeedPanel } from '@/components/machine/RollerSpeedPanel'
 import { WidthControlSection } from '@/components/width/WidthControlSection'
 import { ToastContainer, toast } from '@/components/common/Toast'
-import { writeSpeed } from '@/services/api'
+import { setRollerSpeed, writeConveyorSpeed } from '@/services/api'
 import { wsService } from '@/services/websocket'
 import { useMachineStore } from '@/store/machineStore'
 import type { WebSocketMessage } from '@/types/api'
+import { ProfileSection } from '@/components/profiles/ProfileSection'
 import { BackgroundEffect } from '@/components/common/BackgroundEffect'
 
 export function HomePage() {
   const [showRollerSpeed, setShowRollerSpeed] = useState(false)
+  const [settingRoller, setSettingRoller] = useState<number | null>(null)
+  const [conveyorSetting, setConveyorSetting] = useState(false)
   const setPlcOnline = useMachineStore((s) => s.setPlcOnline)
   const setWebSocketConnected = useMachineStore((s) => s.setWebSocketConnected)
   const setLatency = useMachineStore((s) => s.setLatency)
   const setRunning = useMachineStore((s) => s.setRunning)
   const setRollerModifier = useMachineStore((s) => s.setRollerModifier)
+  const setRollerHighModifier = useMachineStore((s) => s.setRollerHighModifier)
+  const setRollerActualSpeed = useMachineStore((s) => s.setRollerActualSpeed)
+  const setConveyorValue = useMachineStore((s) => s.setConveyorValue)
   const setSelectedRoller = useMachineStore((s) => s.setSelectedRoller)
   const selectedRoller = useMachineStore((s) => s.selectedRoller)
   const rollers = useMachineStore((s) => s.rollers)
+  const conveyorValue = useMachineStore((s) => s.conveyorValue)
 
   useEffect(() => {
     wsService.connect()
@@ -35,6 +42,15 @@ export function HomePage() {
         if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2, p.mc2 * 32010)
         if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3, p.mc3 * 32010)
         if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4, p.mc4 * 32010)
+        if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High, p.mc1High * 32010)
+        if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High, p.mc2High * 32010)
+        if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High, p.mc3High * 32010)
+        if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High, p.mc4High * 32010)
+        if (typeof p.speed1 === 'number') setRollerActualSpeed(0, p.speed1)
+        if (typeof p.speed2 === 'number') setRollerActualSpeed(1, p.speed2)
+        if (typeof p.speed3 === 'number') setRollerActualSpeed(2, p.speed3)
+        if (typeof p.speed4 === 'number') setRollerActualSpeed(3, p.speed4)
+        if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
       }
 
       if (msg.type === 'status' && msg.payload) {
@@ -60,22 +76,53 @@ export function HomePage() {
     }
   }, [])
 
-  const speedData: Record<number, { speed: number }> = {
-    1: { speed: Math.round(rollers[0].modifier / 99.99) },
-    2: { speed: Math.round(rollers[1].modifier / 99.99) },
-    3: { speed: Math.round(rollers[2].modifier / 99.99) },
-    4: { speed: Math.round(rollers[3].modifier / 99.99) },
+  const speedData: Record<number, { lowSetpoint: number; highSetpoint: number; actualSpeed: number }> = {
+    1: { lowSetpoint: Math.round(rollers[0].modifier), highSetpoint: Math.round(rollers[0].highModifier), actualSpeed: rollers[0].actualSpeed },
+    2: { lowSetpoint: Math.round(rollers[1].modifier), highSetpoint: Math.round(rollers[1].highModifier), actualSpeed: rollers[1].actualSpeed },
+    3: { lowSetpoint: Math.round(rollers[2].modifier), highSetpoint: Math.round(rollers[2].highModifier), actualSpeed: rollers[2].actualSpeed },
+    4: { lowSetpoint: Math.round(rollers[3].modifier), highSetpoint: Math.round(rollers[3].highModifier), actualSpeed: rollers[3].actualSpeed },
   }
 
-  const handleSpeedChange = async (axis: number, speed: number) => {
-    const modifier = Math.min(9999, Math.max(0, Math.round(speed * 99.99)))
+  const handleLowSpeedChange = useCallback((axis: number, speed: number) => {
+    const modifier = Math.min(50, Math.max(0, Math.round(speed)))
     setRollerModifier(axis - 1, modifier, modifier * 32010)
+  }, [setRollerModifier])
+
+  const handleHighSpeedChange = useCallback((axis: number, speed: number) => {
+    const modifier = Math.min(50, Math.max(0, Math.round(speed)))
+    setRollerHighModifier(axis - 1, modifier, modifier * 32010)
+  }, [setRollerHighModifier])
+
+  const handleConveyorChange = useCallback((value: number) => {
+    setConveyorValue(Math.min(9999, Math.max(0, Math.round(value))))
+  }, [setConveyorValue])
+
+  const handleConveyorSet = useCallback(async () => {
+    setConveyorSetting(true)
     try {
-      await writeSpeed(axis, modifier)
+      await writeConveyorSpeed(conveyorValue)
+      toast('success', `Conveyor set to ${conveyorValue}`)
     } catch {
-      toast('error', `Failed to write Roller ${axis} speed`)
+      toast('error', 'Failed to set Conveyor speed')
+    } finally {
+      setConveyorSetting(false)
     }
-  }
+  }, [conveyorValue])
+
+  const handleSetSpeed = useCallback(async (axis: number) => {
+    const idx = axis - 1
+    const low = rollers[idx].modifier
+    const high = rollers[idx].highModifier
+    setSettingRoller(axis)
+    try {
+      await setRollerSpeed(axis, low, high)
+      toast('success', `Roller ${axis} set (Low: ${low}, High: ${high})`)
+    } catch {
+      toast('error', `Failed to set Roller ${axis}`)
+    } finally {
+      setSettingRoller(null)
+    }
+  }, [rollers])
 
   return (
     <div className="min-h-screen bg-slate-50 relative">
@@ -109,11 +156,20 @@ export function HomePage() {
                 rollers={speedData}
                 selectedRoller={selectedRoller + 1}
                 onSelectRoller={(axis) => setSelectedRoller(axis - 1)}
-                onSpeedChange={handleSpeedChange}
+                onLowSpeedChange={handleLowSpeedChange}
+                onHighSpeedChange={handleHighSpeedChange}
+                onSetSpeed={handleSetSpeed}
+                settingRoller={settingRoller}
+                conveyorValue={conveyorValue}
+                onConveyorChange={handleConveyorChange}
+                onConveyorSet={handleConveyorSet}
+                conveyorSetting={conveyorSetting}
               />
             </motion.div>
           )}
         </AnimatePresence>
+
+        <ProfileSection />
       </main>
 
       <footer className="sticky bottom-0">

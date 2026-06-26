@@ -24,6 +24,12 @@ export interface MachineStateResponse {
     mc3: number
     mc4: number
   }
+  highRollers: {
+    mc1: number
+    mc2: number
+    mc3: number
+    mc4: number
+  }
   speeds: {
     axis1: number
     axis2: number
@@ -32,6 +38,7 @@ export interface MachineStateResponse {
   }
   widthGap: number
   widthOffset: number
+  conveyor: number
 }
 
 export interface SpeedWriteRequest {

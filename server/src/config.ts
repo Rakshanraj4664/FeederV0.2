@@ -14,6 +14,12 @@ export const CONFIG = {
       MC3: 20014,
       MC4: 20020,
     },
+    HIGH_MODIFIER: {
+      MC1: 20004,
+      MC2: 20010,
+      MC3: 20016,
+      MC4: 20022,
+    },
     AXIS_SPEED: {
       AXIS1: 28022,
       AXIS2: 28024,
@@ -25,9 +31,10 @@ export const CONFIG = {
       CONTRACT: 2004,
     },
     RUNNING_INPUT: 0,
+    CONVEYOR: 20026,
     BASE_FREQUENCY: 32010,
     MODIFIER_MIN: 0,
-    MODIFIER_MAX: 9999,
+    MODIFIER_MAX: 50,
   },
 
   WHITELIST_PATH: './whitelist.txt',

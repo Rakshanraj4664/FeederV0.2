@@ -1,14 +1,14 @@
 export const ROLLERS = [
-  { id: 1, label: 'Roller - 1', registerModifier: 20002, registerSpeed: 28022 },
-  { id: 2, label: 'Roller - 2', registerModifier: 20008, registerSpeed: 28024 },
-  { id: 3, label: 'Roller - 3', registerModifier: 20014, registerSpeed: 28026 },
-  { id: 4, label: 'Roller - 4', registerModifier: 20020, registerSpeed: 28028 },
+  { id: 1, label: 'Roller - 1', registerModifier: 20002, registerHighModifier: 20004, registerSpeed: 28022 },
+  { id: 2, label: 'Roller - 2', registerModifier: 20008, registerHighModifier: 20010, registerSpeed: 28024 },
+  { id: 3, label: 'Roller - 3', registerModifier: 20014, registerHighModifier: 20016, registerSpeed: 28026 },
+  { id: 4, label: 'Roller - 4', registerModifier: 20020, registerHighModifier: 20022, registerSpeed: 28028 },
 ] as const
 
 export const SPEED_FORMULA = {
   BASE_FREQUENCY: 32010,
   MODIFIER_MIN: 0,
-  MODIFIER_MAX: 9999,
+  MODIFIER_MAX: 50,
   calculateSpeed(modifier: number): number {
     return modifier * this.BASE_FREQUENCY
   },
