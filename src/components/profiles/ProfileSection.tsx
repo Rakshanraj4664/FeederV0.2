@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { ProfileGrid } from './ProfileGrid'
 import { CreateProfileModal } from './CreateProfileModal'
 import { ProfileEditorModal } from './ProfileEditorModal'
 import { useProfileStore } from '@/store/profileStore'
+import { useMachineStore } from '@/store/machineStore'
 import { setRollerSpeed, writeConveyorSpeed } from '@/services/api'
 import type { Profile } from '@/types/machine'
 import { toast } from '@/components/common/Toast'
@@ -26,22 +27,51 @@ export function ProfileSection() {
   const updateProfile = useProfileStore((s) => s.updateProfile)
   const cloneProfile = useProfileStore((s) => s.cloneProfile)
   const deleteProfile = useProfileStore((s) => s.deleteProfile)
+  const plcOnline = useMachineStore((s) => s.plcOnline)
+  const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
 
   const handleProfileSelect = (profile: Profile) => {
     setActiveProfileId(profile.id)
   }
 
   const handleSet = async (profile: Profile) => {
+    const modifiers = profile.rollers.map(r => r.modifier)
+    const highModifiers = profile.rollers.map(r => r.highModifier ?? 0)
+    useMachineStore.getState().loadRollerValues(modifiers, highModifiers, profile.conveyorSpeed)
+
     try {
       for (let i = 0; i < 4; i++) {
         await setRollerSpeed(i + 1, profile.rollers[i].modifier, profile.rollers[i].highModifier ?? 0)
       }
       await writeConveyorSpeed(profile.conveyorSpeed)
+      setPendingProfile(null)
       toast('success', `Profile "${profile.name}" applied to PLC`)
     } catch {
-      toast('error', `Failed to apply profile "${profile.name}"`)
+      setPendingProfile(profile)
+      toast('info', `Profile "${profile.name}" set locally — will sync when PLC reconnects`)
     }
   }
+
+  useEffect(() => {
+    if (!plcOnline || !pendingProfile) return
+    let cancelled = false
+    const sync = async () => {
+      try {
+        for (let i = 0; i < 4; i++) {
+          await setRollerSpeed(i + 1, pendingProfile.rollers[i].modifier, pendingProfile.rollers[i].highModifier ?? 0)
+        }
+        await writeConveyorSpeed(pendingProfile.conveyorSpeed)
+        if (!cancelled) {
+          setPendingProfile(null)
+          toast('success', `Profile "${pendingProfile.name}" synced to PLC`)
+        }
+      } catch {
+        // will retry next time PLC reconnects
+      }
+    }
+    sync()
+    return () => { cancelled = true }
+  }, [plcOnline])
 
   const handleEdit = (profile: Profile) => {
     setEditorState({

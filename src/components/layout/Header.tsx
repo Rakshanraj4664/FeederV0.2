@@ -1,7 +1,8 @@
 import { useMachineStore } from '@/store/machineStore'
 import { LABELS } from '@/constants/machine'
 import { triggerEmergencyStop } from '@/services/plc'
-import { Wifi, WifiOff, Cpu, MonitorOff, OctagonAlert, Play, Square } from 'lucide-react'
+import { setRollerSpeed, writeConveyorSpeed } from '@/services/api'
+import { Wifi, WifiOff, Cpu, MonitorOff, OctagonAlert, Play, Square, ShieldCheck } from 'lucide-react'
 
 function StatusBadge({ online, labelOn, labelOff, IconOn, IconOff }: {
   online: boolean
@@ -23,18 +24,41 @@ function StatusBadge({ online, labelOn, labelOff, IconOn, IconOff }: {
 }
 
 export function Header() {
-  const { plcOnline, piOnline, running } = useMachineStore()
+  const { plcOnline, piOnline, running, emergencyStop } = useMachineStore()
 
   const handleEmergency = async () => {
+    const store = useMachineStore.getState()
+    const snapshot = store.rollers.map(r => ({ modifier: r.modifier, highModifier: r.highModifier }))
+    store.setSavedRollers(snapshot)
+    store.setSavedConveyor(store.conveyorValue)
+
     try {
       await triggerEmergencyStop()
     } catch {
       // backend write failed, still reset UI locally
     }
-    const store = useMachineStore.getState()
     store.setEmergencyStop(true)
     for (let i = 0; i < 4; i++) {
       store.setRollerModifier(i, 0, 0)
+    }
+    store.setConveyorValue(0)
+  }
+
+  const handleRelease = async () => {
+    const store = useMachineStore.getState()
+    const saved = store.savedRollers
+    if (!saved) return
+
+    const savedConveyor = store.savedConveyor
+    store.releaseEmergencyStop()
+
+    try {
+      for (let i = 0; i < 4; i++) {
+        await setRollerSpeed(i + 1, saved[i].modifier, saved[i].highModifier)
+      }
+      await writeConveyorSpeed(savedConveyor)
+    } catch {
+      // PLC write failed, store already restored locally
     }
   }
 
@@ -73,14 +97,25 @@ export function Header() {
             {running ? <Play className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
             <span>{running ? 'RUNNING' : 'STOPPED'}</span>
           </div>
-          <button
-            onClick={handleEmergency}
-            className="ml-2 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-red-600/25 transition-all active:scale-95"
-          >
-            <OctagonAlert className="w-4 h-4" />
-            <span className="hidden sm:inline">{LABELS.EMERGENCY_STOP}</span>
-            <span className="sm:hidden">E-STOP</span>
-          </button>
+          {emergencyStop ? (
+            <button
+              onClick={handleRelease}
+              className="ml-2 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/25 transition-all active:scale-95 animate-pulse"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span className="hidden sm:inline">RELEASE</span>
+              <span className="sm:hidden">REL</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleEmergency}
+              className="ml-2 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-red-600/25 transition-all active:scale-95"
+            >
+              <OctagonAlert className="w-4 h-4" />
+              <span className="hidden sm:inline">{LABELS.EMERGENCY_STOP}</span>
+              <span className="sm:hidden">E-STOP</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

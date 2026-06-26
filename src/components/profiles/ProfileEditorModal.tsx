@@ -44,14 +44,14 @@ export function ProfileEditorModal({ profileName, initialRollers, initialConveyo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-4"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-4 flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 pb-2">
+        <div className="p-6 pb-2 flex-shrink-0">
           <h2 className="text-base font-bold text-slate-800">{profileName}</h2>
         </div>
 
-        <div className="px-6">
+        <div className="px-6 overflow-y-auto flex-1 min-h-0">
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((axis) => {
               const idx = axis - 1
@@ -75,7 +75,7 @@ export function ProfileEditorModal({ profileName, initialRollers, initialConveyo
             })}
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 mb-2">
             <ConveyorCard
               value={conveyor}
               onValueChange={(v) => setConveyor(Math.min(9999, Math.max(0, Math.round(v))))}
@@ -84,7 +84,7 @@ export function ProfileEditorModal({ profileName, initialRollers, initialConveyo
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-white px-6 py-4 border-t border-slate-100 rounded-b-2xl flex justify-end gap-3">
+        <div className="flex-shrink-0 bg-white px-6 py-4 border-t border-slate-100 rounded-b-2xl flex justify-end gap-3">
           <button
             onClick={onClose}
             className="px-6 py-2 rounded-xl bg-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-300 transition-all"
