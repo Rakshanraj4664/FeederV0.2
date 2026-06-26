@@ -8,11 +8,13 @@ import { CONFIG } from './config.js'
 import { modbusService } from './services/ModbusService.js'
 import { pollingService } from './services/PollingService.js'
 import { logger } from './services/LoggerService.js'
+import { setBroadcast } from './services/wsBroadcast.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import statusRouter from './routes/status.js'
 import machineRouter from './routes/machine.js'
 import registersRouter from './routes/registers.js'
 import speedRouter from './routes/speed.js'
+import profilesRouter from './routes/profiles.js'
 
 const app = express()
 const server = createServer(app)
@@ -32,6 +34,7 @@ app.use('/api/machine', machineRouter)
 app.use('/api/registers', registersRouter)
 app.use('/api/speed', speedRouter)
 app.use('/api', speedRouter)  // width endpoint
+app.use('/api/profiles', profilesRouter)
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -72,6 +75,8 @@ function broadcast(data: string): void {
     }
   })
 }
+
+setBroadcast(broadcast)
 
 // Start services
 async function start() {

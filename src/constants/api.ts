@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   CONVEYOR: '/speed/conveyor',
   WIDTH: '/width',
   EMERGENCY: '/machine/emergency',
+  PROFILES: '/profiles',
 } as const
 
 export const POLL_INTERVAL = 2000

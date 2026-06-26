@@ -39,6 +39,7 @@ export const CONFIG = {
 
   WHITELIST_PATH: './whitelist.txt',
   LOG_DIR: './logs',
+  PROFILES_DATA_PATH: './data/profiles.json',
 
   isDevelopment: process.env.NODE_ENV !== 'production',
 } as const

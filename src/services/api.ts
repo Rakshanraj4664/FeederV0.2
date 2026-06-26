@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { ApiResponse, MachineStateResponse, StatusResponse, RegisterListResponse, SpeedWriteRequest } from '@/types/api'
+import type { Profile } from '@/types/machine'
 import { API_BASE_URL, API_ENDPOINTS } from '@/constants/api'
 
 const client = axios.create({
@@ -62,6 +63,23 @@ export async function emergencyStop(): Promise<ApiResponse> {
 export async function writeWidth(gap: number, offset: number): Promise<ApiResponse> {
   const { data } = await client.post(API_ENDPOINTS.WIDTH, { gap, offset })
   return data
+}
+
+export async function fetchProfiles(): Promise<Profile[]> {
+  const { data } = await client.get(API_ENDPOINTS.PROFILES)
+  return (data as ApiResponse<Profile[]>).data ?? []
+}
+
+export async function createProfileOnServer(profile: Profile): Promise<void> {
+  await client.post(API_ENDPOINTS.PROFILES, profile)
+}
+
+export async function updateProfileOnServer(id: string, updates: Partial<Profile>): Promise<void> {
+  await client.put(`${API_ENDPOINTS.PROFILES}/${id}`, updates)
+}
+
+export async function deleteProfileFromServer(id: string): Promise<void> {
+  await client.delete(`${API_ENDPOINTS.PROFILES}/${id}`)
 }
 
 export default client

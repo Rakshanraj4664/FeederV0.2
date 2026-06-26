@@ -51,7 +51,7 @@ export interface WidthWriteRequest {
 }
 
 export interface WebSocketMessage {
-  type: 'status' | 'machineState' | 'registerUpdate' | 'error' | 'connection'
+  type: 'status' | 'machineState' | 'registerUpdate' | 'error' | 'connection' | 'profiles_changed'
   payload: Record<string, unknown>
   timestamp: string
 }
