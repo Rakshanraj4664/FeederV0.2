@@ -78,11 +78,11 @@ export function HomePage() {
     }
   }, [])
 
-  const speedData: Record<number, { lowSetpoint: number; highSetpoint: number; actualSpeed: number }> = {
-    1: { lowSetpoint: Math.round(rollers[0].modifier), highSetpoint: Math.round(rollers[0].highModifier), actualSpeed: rollers[0].actualSpeed },
-    2: { lowSetpoint: Math.round(rollers[1].modifier), highSetpoint: Math.round(rollers[1].highModifier), actualSpeed: rollers[1].actualSpeed },
-    3: { lowSetpoint: Math.round(rollers[2].modifier), highSetpoint: Math.round(rollers[2].highModifier), actualSpeed: rollers[2].actualSpeed },
-    4: { lowSetpoint: Math.round(rollers[3].modifier), highSetpoint: Math.round(rollers[3].highModifier), actualSpeed: rollers[3].actualSpeed },
+  const speedData: Record<number, { lowSetpoint: number; highSetpoint: number }> = {
+    1: { lowSetpoint: Math.round(rollers[0].modifier), highSetpoint: Math.round(rollers[0].highModifier) },
+    2: { lowSetpoint: Math.round(rollers[1].modifier), highSetpoint: Math.round(rollers[1].highModifier) },
+    3: { lowSetpoint: Math.round(rollers[2].modifier), highSetpoint: Math.round(rollers[2].highModifier) },
+    4: { lowSetpoint: Math.round(rollers[3].modifier), highSetpoint: Math.round(rollers[3].highModifier) },
   }
 
   const handleLowSpeedChange = useCallback((axis: number, speed: number) => {

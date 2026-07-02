@@ -64,7 +64,6 @@ export function ProfileEditorModal({ profileName, initialRollers, initialConveyo
                   highRegister=""
                   lowSetpoint={rollers[idx].modifier}
                   highSetpoint={rollers[idx].highModifier}
-                  actualSpeed={0}
                   selected={false}
                   onSelect={() => {}}
                   onLowSpeedChange={handleLowChange}

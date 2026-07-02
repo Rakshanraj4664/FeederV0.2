@@ -8,7 +8,6 @@ interface RollerCardProps {
   highRegister: string
   lowSetpoint: number
   highSetpoint: number
-  actualSpeed: number
   selected: boolean
   onSelect: () => void
   onLowSpeedChange: (axis: number, speed: number) => void
@@ -19,8 +18,6 @@ interface RollerCardProps {
 }
 
 const MAX_SPEED = 50
-const BASE_FREQ = 32010
-const MAX_ACTUAL = MAX_SPEED * BASE_FREQ
 const CIRCUMFERENCE = 251.2
 
 type GaugeMode = 'low' | 'high'
@@ -32,7 +29,6 @@ export function RollerCard({
   highRegister,
   lowSetpoint,
   highSetpoint,
-  actualSpeed,
   selected,
   onSelect,
   onLowSpeedChange,
@@ -43,9 +39,7 @@ export function RollerCard({
 }: RollerCardProps) {
   const [gaugeMode, setGaugeMode] = useState<GaugeMode>('low')
   const displayValue = gaugeMode === 'low' ? lowSetpoint : highSetpoint
-  const dashOffset = editing
-    ? (displayValue / MAX_SPEED) * CIRCUMFERENCE
-    : Math.min(actualSpeed / MAX_ACTUAL, 1) * CIRCUMFERENCE
+  const dashOffset = (displayValue / MAX_SPEED) * CIRCUMFERENCE
   const gaugeColor = gaugeMode === 'low' ? '#06b6d4' : '#f97316'
   const valueColor = gaugeMode === 'low' ? 'text-cyan-700' : 'text-orange-500'
 

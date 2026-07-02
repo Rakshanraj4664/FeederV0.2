@@ -2,7 +2,7 @@ import { RollerCard } from './RollerCard'
 import { ConveyorCard } from './ConveyorCard'
 
 interface RollerSpeedPanelProps {
-  rollers: Record<number, { lowSetpoint: number; highSetpoint: number; actualSpeed: number }>
+  rollers: Record<number, { lowSetpoint: number; highSetpoint: number }>
   selectedRoller: number
   onSelectRoller: (axis: number) => void
   onLowSpeedChange: (axis: number, speed: number) => void
@@ -42,7 +42,6 @@ export function RollerSpeedPanel({ rollers, selectedRoller, onSelectRoller, onLo
             highRegister={HIGH_REGISTER_MAP[axis]}
             lowSetpoint={rollers[axis]?.lowSetpoint ?? 0}
             highSetpoint={rollers[axis]?.highSetpoint ?? 0}
-            actualSpeed={rollers[axis]?.actualSpeed ?? 0}
             selected={selectedRoller === axis}
             onSelect={() => onSelectRoller(axis)}
             onLowSpeedChange={onLowSpeedChange}
