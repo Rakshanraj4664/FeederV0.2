@@ -64,7 +64,7 @@ export function StatusBar() {
             <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Check Device</span>
           </button>
         )}
-        <span className="text-[9px] font-mono text-slate-400 hidden md:inline">{deviceId}</span>
+        <span className="text-[10px] font-mono text-slate-500">{deviceId}</span>
       </div>
     </div>
   )

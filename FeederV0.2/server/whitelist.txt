@@ -1,2 +1,0 @@
-# Device Whitelist
-# Format: MAC_ADDRESS or DEVICE_ID

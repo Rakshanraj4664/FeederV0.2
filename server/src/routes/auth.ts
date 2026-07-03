@@ -54,4 +54,23 @@ router.get('/check', requireAuth, (req: AuthenticatedRequest, res) => {
   res.json(response)
 })
 
+router.post('/reload-whitelist', async (_req, res) => {
+  try {
+    await deviceVerification.reloadWhitelist()
+    const response: ApiResponse = {
+      success: true,
+      data: { count: deviceVerification.getWhitelistCount() },
+      timestamp: new Date().toISOString(),
+    }
+    res.json(response)
+  } catch (err) {
+    const response: ApiResponse = {
+      success: false,
+      error: 'Failed to reload whitelist',
+      timestamp: new Date().toISOString(),
+    }
+    res.status(500).json(response)
+  }
+})
+
 export default router

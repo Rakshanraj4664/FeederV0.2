@@ -1,2 +1,3 @@
 # Device Whitelist
 # Format: MAC_ADDRESS or DEVICE_ID
+DEVICE-PZ1L2LHP     

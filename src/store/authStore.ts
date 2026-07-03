@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { verifyDevice, checkAuth } from '@/services/api'
+import { toast } from '@/components/common/Toast'
+
+let _set: (partial: Partial<AuthStore>) => void
 
 function generateDeviceId(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -25,7 +28,9 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      _set = set
+      return {
       deviceId: '',
       token: null,
       isTrusted: false,
@@ -53,12 +58,15 @@ export const useAuthStore = create<AuthStore>()(
               isVerifying: false,
               lastChecked: new Date().toISOString(),
             })
+            toast('success', 'Device verified successfully')
             return true
           }
           set({ isTrusted: false, token: null, isVerifying: false, lastChecked: new Date().toISOString() })
+          toast('error', result?.error || 'Device verification failed')
           return false
-        } catch {
+        } catch (err) {
           set({ isTrusted: false, isVerifying: false, lastChecked: new Date().toISOString() })
+          toast('error', err instanceof Error ? err.message : 'Device verification failed')
           return false
         }
       },
@@ -85,7 +93,8 @@ export const useAuthStore = create<AuthStore>()(
       clearAuth: () => {
         set({ token: null, isTrusted: false, lastChecked: null })
       },
-    }),
+    }
+    },
     {
       name: 'feeder-auth',
       partialize: (state) => ({
@@ -94,6 +103,11 @@ export const useAuthStore = create<AuthStore>()(
         isTrusted: state.isTrusted,
         lastChecked: state.lastChecked,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && !state.deviceId) {
+          _set({ deviceId: generateDeviceId() })
+        }
+      },
     }
   )
 )
