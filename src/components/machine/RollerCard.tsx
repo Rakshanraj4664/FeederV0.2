@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useAuthStore } from '@/store/authStore'
 
 interface RollerCardProps {
   axis: number
@@ -37,6 +38,8 @@ export function RollerCard({
   setting,
   editing,
 }: RollerCardProps) {
+  const isTrusted = useAuthStore((s) => s.isTrusted)
+  const canWrite = editing || isTrusted
   const [gaugeMode, setGaugeMode] = useState<GaugeMode>('low')
   const displayValue = gaugeMode === 'low' ? lowSetpoint : highSetpoint
   const dashOffset = (displayValue / MAX_SPEED) * CIRCUMFERENCE
@@ -181,7 +184,8 @@ export function RollerCard({
         <div className="mt-3 flex justify-center">
           <button
             onClick={handleSet}
-            disabled={setting}
+            disabled={setting || !canWrite}
+            title={!canWrite ? 'Trust your device first' : ''}
             className="px-6 py-1.5 rounded-xl bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold transition-all shadow-sm"
           >
             {setting ? 'Setting...' : 'Set'}

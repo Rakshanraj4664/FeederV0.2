@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useAuthStore } from '@/store/authStore'
 
 interface ConveyorCardProps {
   value: number
@@ -12,6 +13,7 @@ const CONVEYOR_MAX = 9999
 const CIRCUMFERENCE = 251.2
 
 export function ConveyorCard({ value, onValueChange, onSet, setting, hideSet }: ConveyorCardProps) {
+  const isTrusted = useAuthStore((s) => s.isTrusted)
   const dashOffset = (value / CONVEYOR_MAX) * CIRCUMFERENCE
 
   const sliderBg = (v: number) =>
@@ -89,7 +91,8 @@ export function ConveyorCard({ value, onValueChange, onSet, setting, hideSet }: 
         <div className="mt-3 flex justify-center">
           <button
             onClick={onSet}
-            disabled={setting}
+            disabled={setting || !isTrusted}
+            title={!isTrusted ? 'Trust your device first' : ''}
             className="px-6 py-1.5 rounded-xl bg-cyan-500 text-white text-xs font-bold hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
           >
             {setting ? 'SETTING...' : 'SET'}

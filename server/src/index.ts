@@ -15,6 +15,8 @@ import machineRouter from './routes/machine.js'
 import registersRouter from './routes/registers.js'
 import speedRouter from './routes/speed.js'
 import profilesRouter from './routes/profiles.js'
+import authRouter from './routes/auth.js'
+import { requireAuth } from './middleware/auth.js'
 
 const app = express()
 const server = createServer(app)
@@ -32,9 +34,10 @@ app.set('trust proxy', 1)
 app.use('/api/status', statusRouter)
 app.use('/api/machine', machineRouter)
 app.use('/api/registers', registersRouter)
-app.use('/api/speed', speedRouter)
+app.use('/api/speed', requireAuth, speedRouter)
 app.use('/api', speedRouter)  // width endpoint
-app.use('/api/profiles', profilesRouter)
+app.use('/api/profiles', requireAuth, profilesRouter)
+app.use('/api/auth', authRouter)
 
 // Health check
 app.get('/api/health', (_req, res) => {

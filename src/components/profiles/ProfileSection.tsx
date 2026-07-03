@@ -6,6 +6,7 @@ import { CreateProfileModal } from './CreateProfileModal'
 import { ProfileEditorModal } from './ProfileEditorModal'
 import { useProfileStore } from '@/store/profileStore'
 import { useMachineStore } from '@/store/machineStore'
+import { useAuthStore } from '@/store/authStore'
 import { setRollerSpeed, writeConveyorSpeed } from '@/services/api'
 import type { Profile } from '@/types/machine'
 import { toast } from '@/components/common/Toast'
@@ -28,6 +29,7 @@ export function ProfileSection() {
   const cloneProfile = useProfileStore((s) => s.cloneProfile)
   const deleteProfile = useProfileStore((s) => s.deleteProfile)
   const plcOnline = useMachineStore((s) => s.plcOnline)
+  const isTrusted = useAuthStore((s) => s.isTrusted)
   const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
 
   const handleProfileSelect = (profile: Profile) => {
@@ -118,7 +120,9 @@ export function ProfileSection() {
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); setShowCreateModal(true) }}
-            className="p-1 rounded-lg bg-cyan-500 text-white hover:bg-cyan-400 transition-all"
+            disabled={!isTrusted}
+            title={!isTrusted ? 'Trust your device first' : ''}
+            className="p-1 rounded-lg bg-cyan-500 text-white hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             <Plus className="w-4 h-4" />
           </button>

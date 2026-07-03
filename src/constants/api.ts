@@ -24,6 +24,8 @@ export const API_ENDPOINTS = {
   WIDTH: '/width',
   EMERGENCY: '/machine/emergency',
   PROFILES: '/profiles',
+  AUTH_VERIFY: '/auth/verify',
+  AUTH_CHECK: '/auth/check',
 } as const
 
 export const POLL_INTERVAL = 2000

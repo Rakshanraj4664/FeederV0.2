@@ -1,4 +1,5 @@
 import type { Profile } from '@/types/machine'
+import { useAuthStore } from '@/store/authStore'
 
 interface ProfileCardProps {
   profile: Profile
@@ -11,6 +12,7 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ profile, selected, onSelect, onSet, onEdit, onClone, onDelete }: ProfileCardProps) {
+  const isTrusted = useAuthStore((s) => s.isTrusted)
   return (
     <div
       onClick={() => onSelect(profile)}
@@ -45,25 +47,33 @@ export function ProfileCard({ profile, selected, onSelect, onSet, onEdit, onClon
       <div className="mt-3 grid grid-cols-2 gap-1.5">
         <button
           onClick={(e) => { e.stopPropagation(); onSet(profile) }}
-          className="py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-400 transition-all"
+          disabled={!isTrusted}
+          title={!isTrusted ? 'Trust your device first' : ''}
+          className="py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           Set
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onEdit(profile) }}
-          className="py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 transition-all"
+          disabled={!isTrusted}
+          title={!isTrusted ? 'Trust your device first' : ''}
+          className="py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           Edit
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onClone(profile) }}
-          className="py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 transition-all"
+          disabled={!isTrusted}
+          title={!isTrusted ? 'Trust your device first' : ''}
+          className="py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           Clone
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(profile.id) }}
-          className="py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition-all"
+          disabled={!isTrusted}
+          title={!isTrusted ? 'Trust your device first' : ''}
+          className="py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           Delete
         </button>

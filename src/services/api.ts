@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { ApiResponse, MachineStateResponse, StatusResponse, RegisterListResponse, SpeedWriteRequest } from '@/types/api'
+import type { ApiResponse, MachineStateResponse, StatusResponse, RegisterListResponse, SpeedWriteRequest, VerifyResponse, AuthCheckResponse } from '@/types/api'
 import type { Profile } from '@/types/machine'
 import { API_BASE_URL, API_ENDPOINTS } from '@/constants/api'
 
@@ -8,6 +8,23 @@ const client = axios.create({
   timeout: 5000,
   headers: { 'Content-Type': 'application/json' },
 })
+
+client.interceptors.request.use(
+  (config) => {
+    try {
+      const raw = localStorage.getItem('feeder-auth')
+      if (raw) {
+        const state = JSON.parse(raw)
+        if (state.state?.token) {
+          config.headers.Authorization = `Bearer ${state.state.token}`
+        }
+      }
+    } catch {
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
 
 client.interceptors.response.use(
   (res) => res,
@@ -80,6 +97,16 @@ export async function updateProfileOnServer(id: string, updates: Partial<Profile
 
 export async function deleteProfileFromServer(id: string): Promise<void> {
   await client.delete(`${API_ENDPOINTS.PROFILES}/${id}`)
+}
+
+export async function verifyDevice(deviceId: string): Promise<ApiResponse<VerifyResponse>> {
+  const { data } = await client.post(API_ENDPOINTS.AUTH_VERIFY, { deviceId })
+  return data
+}
+
+export async function checkAuth(): Promise<ApiResponse<AuthCheckResponse>> {
+  const { data } = await client.get(API_ENDPOINTS.AUTH_CHECK)
+  return data
 }
 
 export default client

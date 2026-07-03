@@ -15,6 +15,7 @@ import { AnimatedValue } from './AnimatedValue'
 import { getPlcWidth } from '@/services/plc'
 import { writeWidth } from '@/services/api'
 import { toast } from '@/components/common/Toast'
+import { useAuthStore } from '@/store/authStore'
 
 const DEFAULT_LEFT = 400
 const DEFAULT_RIGHT = 2000
@@ -29,6 +30,7 @@ const CONTRACT_REGISTER = 2004
 const mmToPct = (mm: number) => (mm / RAIL_LENGTH_MM) * 100
 
 export function WidthControlSection() {
+  const isTrusted = useAuthStore((s) => s.isTrusted)
   const [leftPlateOuter, setLeftPlateOuter] = useState(DEFAULT_LEFT)
   const [rightPlateOuter, setRightPlateOuter] = useState(DEFAULT_RIGHT)
   const [savedLeft, setSavedLeft] = useState(DEFAULT_LEFT)
@@ -320,31 +322,31 @@ export function WidthControlSection() {
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
               <IndustrialButton size="lg" variant="outline" onClick={handleMoveLeft}
-                active={activeAction === 'moveLeft'} disabled={isAtLeftRail}>
+                active={activeAction === 'moveLeft'} disabled={isAtLeftRail || !isTrusted}>
                 <ArrowLeftToLine className="w-5 h-5" />
                 <span className="hidden sm:inline">Move Left</span>
                 <span className="sm:hidden">Left</span>
               </IndustrialButton>
               <IndustrialButton size="lg" variant="secondary" onClick={handleCompress}
-                active={activeAction === 'contract'} disabled={isAtMinGap}>
+                active={activeAction === 'contract'} disabled={isAtMinGap || !isTrusted}>
                 <ChevronsRightLeft className="w-5 h-5" />
                 <span className="hidden sm:inline">Contract</span>
                 <span className="sm:hidden">In</span>
               </IndustrialButton>
               <IndustrialButton size="lg" variant="accent" onClick={handleExpand}
-                active={activeAction === 'expand'} disabled={isFullyExpanded}>
+                active={activeAction === 'expand'} disabled={isFullyExpanded || !isTrusted}>
                 <span className="hidden sm:inline">Expand</span>
                 <span className="sm:hidden">Out</span>
                 <ChevronsLeftRight className="w-5 h-5" />
               </IndustrialButton>
               <IndustrialButton size="lg" variant="outline" onClick={handleMoveRight}
-                active={activeAction === 'moveRight'} disabled={isAtRightRail}>
+                active={activeAction === 'moveRight'} disabled={isAtRightRail || !isTrusted}>
                 <span className="hidden sm:inline">Move Right</span>
                 <span className="sm:hidden">Right</span>
                 <ArrowRightToLine className="w-5 h-5" />
               </IndustrialButton>
               <IndustrialButton size="lg" variant="ghost" onClick={handleResetToSaved}
-                active={activeAction === 'reset'}>
+                active={activeAction === 'reset'} disabled={!isTrusted}>
                 <Undo2 className="w-5 h-5" /> Reset
               </IndustrialButton>
             </div>
@@ -355,10 +357,10 @@ export function WidthControlSection() {
                 {hasChanges ? 'Unsaved changes' : 'Position saved'}
               </div>
               <div className="flex gap-2">
-                <IndustrialButton size="md" variant="outline" onClick={handleResetToSaved} disabled={!hasChanges}>
+                <IndustrialButton size="md" variant="outline" onClick={handleResetToSaved} disabled={!hasChanges || !isTrusted}>
                   <Undo2 className="w-4 h-4" /> Revert
                 </IndustrialButton>
-                <IndustrialButton size="md" variant="accent" onClick={handleSet} disabled={!hasChanges}>
+                <IndustrialButton size="md" variant="accent" onClick={handleSet} disabled={!hasChanges || !isTrusted}>
                   <Check className="w-4 h-4" /> SET
                 </IndustrialButton>
               </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { RollerCard } from '@/components/machine/RollerCard'
 import { ConveyorCard } from '@/components/machine/ConveyorCard'
+import { useAuthStore } from '@/store/authStore'
 
 interface RollerData {
   modifier: number
@@ -16,6 +17,7 @@ interface ProfileEditorModalProps {
 }
 
 export function ProfileEditorModal({ profileName, initialRollers, initialConveyor, onConfirm, onClose }: ProfileEditorModalProps) {
+  const isTrusted = useAuthStore((s) => s.isTrusted)
   const [rollers, setRollers] = useState<RollerData[]>(initialRollers)
   const [conveyor, setConveyor] = useState(initialConveyor)
 
@@ -92,7 +94,9 @@ export function ProfileEditorModal({ profileName, initialRollers, initialConveyo
           </button>
           <button
             onClick={handleConfirm}
-            className="px-6 py-2 rounded-xl bg-cyan-500 text-white text-sm font-bold hover:bg-cyan-400 transition-all"
+            disabled={!isTrusted}
+            title={!isTrusted ? 'Trust your device first' : ''}
+            className="px-6 py-2 rounded-xl bg-cyan-500 text-white text-sm font-bold hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             OK
           </button>
