@@ -1,4 +1,3 @@
-import type { WebSocket } from 'ws'
 import { modbusService } from './ModbusService.js'
 import { logger } from './LoggerService.js'
 import { CONFIG } from '../config.js'
@@ -29,16 +28,17 @@ class PollingService {
   private async poll(): Promise<void> {
     try {
       const isPlcOnline = await modbusService.healthCheck()
-      const isRunning = await modbusService.readMachineRunning()
-      const msg: Record<string, unknown> = {
-        type: 'status',
-        payload: { plcOnline: isPlcOnline, running: isRunning },
-        timestamp: new Date().toISOString(),
-      }
-      this.broadcast?.(JSON.stringify(msg))
 
       if (isPlcOnline) {
         const state = await modbusService.readMachineState()
+        const isRunning = state.speed1 > 0 || state.speed2 > 0 || state.speed3 > 0 || state.speed4 > 0
+
+        this.broadcast?.(JSON.stringify({
+          type: 'status',
+          payload: { plcOnline: true, running: isRunning },
+          timestamp: new Date().toISOString(),
+        }))
+
         const stateMsg = {
           type: 'machineState',
           payload: {
@@ -65,6 +65,12 @@ class PollingService {
           this.broadcast?.(stateStr)
           this.lastState = stateStr
         }
+      } else {
+        this.broadcast?.(JSON.stringify({
+          type: 'status',
+          payload: { plcOnline: false, running: false },
+          timestamp: new Date().toISOString(),
+        }))
       }
     } catch (err) {
       logger.error('plc', 'Polling error', err)

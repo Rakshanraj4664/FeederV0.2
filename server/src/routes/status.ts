@@ -7,7 +7,12 @@ import type { ApiResponse } from '../types/api.js'
 const router = Router()
 
 router.get('/', async (_req, res) => {
-  const running = await modbusService.readMachineRunning()
+  let running = false
+  try {
+    const state = await modbusService.readMachineState()
+    running = state.speed1 > 0 || state.speed2 > 0 || state.speed3 > 0 || state.speed4 > 0
+  } catch {
+  }
   const response: ApiResponse = {
     success: true,
     data: {

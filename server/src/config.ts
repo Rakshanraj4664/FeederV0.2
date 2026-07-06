@@ -30,7 +30,6 @@ export const CONFIG = {
       EXPAND: 2000,
       CONTRACT: 2004,
     },
-    RUNNING_INPUT: 0,
     CONVEYOR: 20026,
     BASE_FREQUENCY: 32010,
     MODIFIER_MIN: 0,

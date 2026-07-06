@@ -50,14 +50,13 @@ app.use(errorHandler)
 // WebSocket
 const wss = new WebSocketServer({ server, path: '/ws' })
 
-wss.on('connection', async (ws: WebSocket) => {
+wss.on('connection', (ws: WebSocket) => {
   logger.info('system', 'WebSocket client connected')
 
-  // Send initial status
-  const running = await modbusService.readMachineRunning()
+  // Send initial status (running will be updated on first poll cycle)
   ws.send(JSON.stringify({
     type: 'status',
-    payload: { plcOnline: modbusService.connected === 'connected', running },
+    payload: { plcOnline: modbusService.connected === 'connected', running: false },
     timestamp: new Date().toISOString(),
   }))
 

@@ -158,16 +158,6 @@ class ModbusService {
     logger.info('plc', 'EMERGENCY STOP — all modifiers and conveyor set to 0')
   }
 
-  async readMachineRunning(): Promise<boolean> {
-    if (this._connected !== 'connected') return false
-    try {
-      const result = await this.client.readDiscreteInputs(CONFIG.REGISTERS.RUNNING_INPUT, 1)
-      return Boolean(result.data[0])
-    } catch {
-      return false
-    }
-  }
-
   async healthCheck(): Promise<boolean> {
     if (this._connected !== 'connected') return false
     try {

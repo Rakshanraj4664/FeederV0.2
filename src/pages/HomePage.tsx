@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
@@ -17,6 +17,7 @@ export function HomePage() {
   const [showRollerSpeed, setShowRollerSpeed] = useState(false)
   const [settingRoller, setSettingRoller] = useState<number | null>(null)
   const [conveyorSetting, setConveyorSetting] = useState(false)
+  const initialLoadDone = useRef(false)
   const setPlcOnline = useMachineStore((s) => s.setPlcOnline)
   const setPiOnline = useMachineStore((s) => s.setPiOnline)
   const setWebSocketConnected = useMachineStore((s) => s.setWebSocketConnected)
@@ -39,19 +40,24 @@ export function HomePage() {
 
       if (msg.type === 'machineState' && msg.payload) {
         const p = msg.payload as Record<string, unknown>
-        if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1, p.mc1 * 32010)
-        if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2, p.mc2 * 32010)
-        if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3, p.mc3 * 32010)
-        if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4, p.mc4 * 32010)
-        if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High, p.mc1High * 32010)
-        if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High, p.mc2High * 32010)
-        if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High, p.mc3High * 32010)
-        if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High, p.mc4High * 32010)
+
+        if (!initialLoadDone.current) {
+          if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1, p.mc1 * 32010)
+          if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2, p.mc2 * 32010)
+          if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3, p.mc3 * 32010)
+          if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4, p.mc4 * 32010)
+          if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High, p.mc1High * 32010)
+          if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High, p.mc2High * 32010)
+          if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High, p.mc3High * 32010)
+          if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High, p.mc4High * 32010)
+          if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
+          initialLoadDone.current = true
+        }
+
         if (typeof p.speed1 === 'number') setRollerActualSpeed(0, p.speed1)
         if (typeof p.speed2 === 'number') setRollerActualSpeed(1, p.speed2)
         if (typeof p.speed3 === 'number') setRollerActualSpeed(2, p.speed3)
         if (typeof p.speed4 === 'number') setRollerActualSpeed(3, p.speed4)
-        if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
       }
 
       if (msg.type === 'status' && msg.payload) {
