@@ -39,7 +39,7 @@ export function Header() {
     }
     store.setEmergencyStop(true)
     for (let i = 0; i < 4; i++) {
-      store.setRollerModifier(i, 0, 0)
+      store.setRollerModifier(i, 0)
     }
     store.setConveyorValue(0)
   }

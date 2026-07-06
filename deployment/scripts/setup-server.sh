@@ -29,6 +29,12 @@ cd server
 npm install
 cd ..
 
+# Compile backend TypeScript
+echo "Compiling backend TypeScript..."
+cd server
+npx tsc
+cd ..
+
 # Configure Nginx
 echo "Configuring Nginx..."
 cat > /etc/nginx/sites-available/feeder-hmi <<'NGINX'
@@ -79,7 +85,7 @@ nginx -t && systemctl restart nginx
 # Start backend with PM2
 echo "Starting backend with PM2..."
 cd server
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 cd ..
 

@@ -6,8 +6,8 @@ interface MachineStore extends MachineState, MachineStatus {
   selectedRoller: number
   savedRollers: { modifier: number; highModifier: number }[] | null
   savedConveyor: number
-  setRollerModifier: (index: number, modifier: number, speed: number) => void
-  setRollerHighModifier: (index: number, highModifier: number, highSpeed: number) => void
+  setRollerModifier: (index: number, modifier: number) => void
+  setRollerHighModifier: (index: number, highModifier: number) => void
   setRollerActualSpeed: (index: number, actualSpeed: number) => void
   setConveyorValue: (value: number) => void
   loadRollerValues: (modifiers: number[], highModifiers: number[], conveyor: number) => void
@@ -23,7 +23,6 @@ interface MachineStore extends MachineState, MachineStatus {
   setLatency: (latency: number) => void
   setRunning: (running: boolean) => void
   setSelectedRoller: (index: number) => void
-  updateFromPoll: (data: Partial<MachineState & MachineStatus>) => void
 }
 
 type PersistedState = Pick<MachineStore, 'rollers' | 'widthGap' | 'widthOffset' | 'emergencyStop' | 'running' | 'conveyorValue' | 'selectedRoller' | 'savedRollers' | 'savedConveyor'>
@@ -32,10 +31,10 @@ export const useMachineStore = create<MachineStore>()(
   persist(
     (set, get) => ({
       rollers: [
-        { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
-        { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
-        { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
-        { modifier: 0, speed: 0, highModifier: 0, highSpeed: 0, actualSpeed: 0, enabled: true },
+        { modifier: 0, highModifier: 0, actualSpeed: 0, enabled: true },
+        { modifier: 0, highModifier: 0, actualSpeed: 0, enabled: true },
+        { modifier: 0, highModifier: 0, actualSpeed: 0, enabled: true },
+        { modifier: 0, highModifier: 0, actualSpeed: 0, enabled: true },
       ],
       widthGap: 800,
       widthOffset: 0,
@@ -51,17 +50,17 @@ export const useMachineStore = create<MachineStore>()(
       savedRollers: null,
       savedConveyor: 0,
 
-      setRollerModifier: (index, modifier, speed) =>
+      setRollerModifier: (index, modifier) =>
         set((state) => {
           const rollers = [...state.rollers]
-          rollers[index] = { ...rollers[index], modifier, speed }
+          rollers[index] = { ...rollers[index], modifier }
           return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
         }),
 
-      setRollerHighModifier: (index, highModifier, highSpeed) =>
+      setRollerHighModifier: (index, highModifier) =>
         set((state) => {
           const rollers = [...state.rollers]
-          rollers[index] = { ...rollers[index], highModifier, highSpeed }
+          rollers[index] = { ...rollers[index], highModifier }
           return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
         }),
 
@@ -82,8 +81,6 @@ export const useMachineStore = create<MachineStore>()(
               ...rollers[i],
               modifier: modifiers[i],
               highModifier: highModifiers[i],
-              speed: modifiers[i] * 32010,
-              highSpeed: highModifiers[i] * 32010,
             }
           }
           return { rollers, conveyorValue: conveyor, lastUpdate: new Date().toISOString() }
@@ -103,8 +100,6 @@ export const useMachineStore = create<MachineStore>()(
             ...rollers[i],
             modifier: state.savedRollers[i].modifier,
             highModifier: state.savedRollers[i].highModifier,
-            speed: state.savedRollers[i].modifier * 32010,
-            highSpeed: state.savedRollers[i].highModifier * 32010,
           }
         }
         set({ rollers, conveyorValue: state.savedConveyor, emergencyStop: false, savedRollers: null, savedConveyor: 0, lastUpdate: new Date().toISOString() })
@@ -115,9 +110,6 @@ export const useMachineStore = create<MachineStore>()(
       setLatency: (latency) => set({ latency }),
       setRunning: (running) => set({ running, lastUpdate: new Date().toISOString() }),
       setSelectedRoller: (index) => set({ selectedRoller: index }),
-
-      updateFromPoll: (data) =>
-        set((state) => ({ ...state, ...data, lastUpdate: new Date().toISOString() })),
     }),
     {
       name: 'feeder-machine-state',

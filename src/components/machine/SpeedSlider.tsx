@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
-import { SPEED_FORMULA } from '@/constants/machine'
+
+const MODIFIER_MIN = 0
+const MODIFIER_MAX = 50
 
 interface SpeedSliderProps {
   value: number
@@ -20,8 +22,8 @@ export function SpeedSlider({ value, onChange, disabled }: SpeedSliderProps) {
     <div className="relative pt-6 pb-2">
       <input
         type="range"
-        min={SPEED_FORMULA.MODIFIER_MIN}
-        max={SPEED_FORMULA.MODIFIER_MAX}
+        min={MODIFIER_MIN}
+        max={MODIFIER_MAX}
         value={value}
         onChange={handleChange}
         disabled={disabled}
@@ -29,7 +31,7 @@ export function SpeedSlider({ value, onChange, disabled }: SpeedSliderProps) {
       />
       <div className="flex justify-between mt-1.5 text-[10px] font-mono text-slate-400">
         <span>0</span>
-        <span>{SPEED_FORMULA.MODIFIER_MAX}</span>
+        <span>{MODIFIER_MAX}</span>
       </div>
     </div>
   )

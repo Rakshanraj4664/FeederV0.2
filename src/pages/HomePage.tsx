@@ -42,14 +42,14 @@ export function HomePage() {
         const p = msg.payload as Record<string, unknown>
 
         if (!initialLoadDone.current) {
-          if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1, p.mc1 * 32010)
-          if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2, p.mc2 * 32010)
-          if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3, p.mc3 * 32010)
-          if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4, p.mc4 * 32010)
-          if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High, p.mc1High * 32010)
-          if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High, p.mc2High * 32010)
-          if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High, p.mc3High * 32010)
-          if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High, p.mc4High * 32010)
+          if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1)
+          if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2)
+          if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3)
+          if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4)
+          if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High)
+          if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High)
+          if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High)
+          if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High)
           if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
           initialLoadDone.current = true
         }
@@ -93,12 +93,12 @@ export function HomePage() {
 
   const handleLowSpeedChange = useCallback((axis: number, speed: number) => {
     const modifier = Math.min(50, Math.max(0, Math.round(speed)))
-    setRollerModifier(axis - 1, modifier, modifier * 32010)
+    setRollerModifier(axis - 1, modifier)
   }, [setRollerModifier])
 
   const handleHighSpeedChange = useCallback((axis: number, speed: number) => {
     const modifier = Math.min(50, Math.max(0, Math.round(speed)))
-    setRollerHighModifier(axis - 1, modifier, modifier * 32010)
+    setRollerHighModifier(axis - 1, modifier)
   }, [setRollerHighModifier])
 
   const handleConveyorChange = useCallback((value: number) => {

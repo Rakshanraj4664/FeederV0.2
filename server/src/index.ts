@@ -34,7 +34,7 @@ app.set('trust proxy', 1)
 app.use('/api/status', statusRouter)
 app.use('/api/machine', machineRouter)
 app.use('/api/registers', registersRouter)
-app.use('/api/speed', requireAuth, speedRouter)
+app.use('/api/speed', speedRouter)
 app.use('/api', speedRouter)  // width endpoint
 app.use('/api/profiles', requireAuth, profilesRouter)
 app.use('/api/auth', authRouter)

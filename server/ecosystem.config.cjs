@@ -21,7 +21,7 @@ module.exports = {
       name: 'feeder-backend',
       cwd: '.',
       script: 'npm',
-      args: 'run dev',
+      args: 'run start',
       env: {
         NODE_ENV: 'production',
         PORT: 5000,

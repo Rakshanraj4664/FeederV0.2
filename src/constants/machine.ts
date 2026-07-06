@@ -5,15 +5,6 @@ export const ROLLERS = [
   { id: 4, label: 'Roller - 4', registerModifier: 20020, registerHighModifier: 20022, registerSpeed: 28028 },
 ] as const
 
-export const SPEED_FORMULA = {
-  BASE_FREQUENCY: 32010,
-  MODIFIER_MIN: 0,
-  MODIFIER_MAX: 50,
-  calculateSpeed(modifier: number): number {
-    return modifier * this.BASE_FREQUENCY
-  },
-} as const
-
 export const LABELS = {
   APP_TITLE: 'FEEDER',
   PLC_ONLINE: 'PLC ONLINE',

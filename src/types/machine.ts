@@ -1,8 +1,6 @@
 export interface RollerState {
   modifier: number
-  speed: number
   highModifier: number
-  highSpeed: number
   actualSpeed: number
   enabled: boolean
 }
