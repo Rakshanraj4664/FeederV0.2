@@ -21,7 +21,7 @@ export const REGISTERS = {
     EXPAND: 2000,
     CONTRACT: 2004,
   },
-  CONVEYOR: 20026,
+  CONVEYOR: 20027,
   BASE_FREQUENCY: 32010,
 } as const
 
@@ -40,5 +40,5 @@ export const REGISTER_ADDRESSES = [
   { address: 28028, name: 'Axis 4 Speed', group: 'speed' as const },
   { address: 2000, name: 'Width Expand', group: 'width' as const },
   { address: 2004, name: 'Width Contract', group: 'width' as const },
-  { address: 20026, name: 'Conveyor Speed', group: 'conveyor' as const },
+  { address: 20027, name: 'Conveyor Speed', group: 'conveyor' as const },
 ] as const

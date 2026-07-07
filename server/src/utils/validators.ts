@@ -22,3 +22,13 @@ export function validateWidthOffset(value: unknown): number | null {
   if (Math.abs(num) > 400) return null
   return Math.round(num)
 }
+
+export function validateConveyorValue(value: unknown): number | null {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return null
+  const rounded = Math.round(num)
+  if (rounded < CONFIG.REGISTERS.CONVEYOR_MIN || rounded > CONFIG.REGISTERS.CONVEYOR_MAX) {
+    return null
+  }
+  return rounded
+}

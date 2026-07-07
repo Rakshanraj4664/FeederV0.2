@@ -100,7 +100,40 @@ export class ModbusService {
     }
   }
 
-  async readMachineState(): Promise<{
+  async readRegister(address: number): Promise<number> {
+    if (this._connected !== 'connected') {
+      throw new Error('PLC not connected')
+    }
+
+    try {
+      const result = await this.client.readHoldingRegisters(address, 1)
+      return result.data[0]
+    } catch (err) {
+      logger.error('modbus', `Failed to read register at ${address}`, err)
+      this._connected = 'error'
+      this.scheduleReconnect()
+      throw err
+    }
+  }
+
+  async writeRegister(address: number, value: number): Promise<boolean> {
+    if (this._connected !== 'connected') {
+      throw new Error('PLC not connected')
+    }
+
+    try {
+      await this.client.writeRegister(address, value)
+      logger.info('modbus', `Write register at ${address} = ${value}`)
+      return true
+    } catch (err) {
+      logger.error('modbus', `Failed to write register at ${address}`, err)
+      this._connected = 'error'
+      this.scheduleReconnect()
+      throw err
+    }
+  }
+
+  async readAllState(): Promise<{
     mc1: number; mc2: number; mc3: number; mc4: number
     mc1High: number; mc2High: number; mc3High: number; mc4High: number
     speed1: number; speed2: number; speed3: number; speed4: number
@@ -122,8 +155,23 @@ export class ModbusService {
     const speed4 = await this.readFloat(r.AXIS_SPEED.AXIS4)
     const widthGap = await this.readFloat(r.WIDTH.EXPAND)
     const widthOffset = await this.readFloat(r.WIDTH.CONTRACT)
-    const conveyor = await this.readFloat(r.CONVEYOR)
+    const rawConveyor = await this.readRegister(r.CONVEYOR)
+    const conveyor = Math.min(r.CONVEYOR_MAX, Math.max(r.CONVEYOR_MIN, Math.round(rawConveyor)))
     return { mc1, mc2, mc3, mc4, mc1High, mc2High, mc3High, mc4High, speed1, speed2, speed3, speed4, widthGap, widthOffset, conveyor }
+  }
+
+  async readMachineState(): Promise<{
+    speed1: number; speed2: number; speed3: number; speed4: number
+    widthGap: number; widthOffset: number
+  }> {
+    const r = CONFIG.REGISTERS
+    const speed1 = await this.readFloat(r.AXIS_SPEED.AXIS1)
+    const speed2 = await this.readFloat(r.AXIS_SPEED.AXIS2)
+    const speed3 = await this.readFloat(r.AXIS_SPEED.AXIS3)
+    const speed4 = await this.readFloat(r.AXIS_SPEED.AXIS4)
+    const widthGap = await this.readFloat(r.WIDTH.EXPAND)
+    const widthOffset = await this.readFloat(r.WIDTH.CONTRACT)
+    return { speed1, speed2, speed3, speed4, widthGap, widthOffset }
   }
 
   async writeAxisSpeed(axis: number, value: number): Promise<boolean> {
@@ -149,7 +197,7 @@ export class ModbusService {
   }
 
   async writeConveyorSpeed(value: number): Promise<boolean> {
-    return this.writeFloat(CONFIG.REGISTERS.CONVEYOR, value)
+    return this.writeRegister(CONFIG.REGISTERS.CONVEYOR, Math.round(value))
   }
 
   async setRollerSpeed(axis: number, low: number, high: number): Promise<boolean> {
@@ -169,14 +217,14 @@ export class ModbusService {
     await this.writeFloat(hr.MC2, 0)
     await this.writeFloat(hr.MC3, 0)
     await this.writeFloat(hr.MC4, 0)
-    await this.writeFloat(CONFIG.REGISTERS.CONVEYOR, 0)
+    await this.writeRegister(CONFIG.REGISTERS.CONVEYOR, 0)
     logger.info('plc', 'EMERGENCY STOP — all modifiers and conveyor set to 0')
   }
 
   async healthCheck(): Promise<boolean> {
     if (this._connected !== 'connected') return false
     try {
-      await this.readFloat(CONFIG.REGISTERS.MODIFIER.MC1)
+      await this.readFloat(CONFIG.REGISTERS.AXIS_SPEED.AXIS1)
       return true
     } catch {
       return false

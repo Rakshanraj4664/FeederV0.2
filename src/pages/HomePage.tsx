@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
@@ -6,7 +6,7 @@ import { StatusBar } from '@/components/layout/StatusBar'
 import { RollerSpeedPanel } from '@/components/machine/RollerSpeedPanel'
 import { WidthControlSection } from '@/components/width/WidthControlSection'
 import { ToastContainer, toast } from '@/components/common/Toast'
-import { setRollerSpeed, writeConveyorSpeed } from '@/services/api'
+import { getMachineState, setRollerSpeed, writeConveyorSpeed } from '@/services/api'
 import { wsService } from '@/services/websocket'
 import { useMachineStore } from '@/store/machineStore'
 import type { WebSocketMessage } from '@/types/api'
@@ -17,7 +17,6 @@ export function HomePage() {
   const [showRollerSpeed, setShowRollerSpeed] = useState(false)
   const [settingRoller, setSettingRoller] = useState<number | null>(null)
   const [conveyorSetting, setConveyorSetting] = useState(false)
-  const initialLoadDone = useRef(false)
   const setPlcOnline = useMachineStore((s) => s.setPlcOnline)
   const setPiOnline = useMachineStore((s) => s.setPiOnline)
   const setWebSocketConnected = useMachineStore((s) => s.setWebSocketConnected)
@@ -33,6 +32,20 @@ export function HomePage() {
   const conveyorValue = useMachineStore((s) => s.conveyorValue)
 
   useEffect(() => {
+    getMachineState().then((res) => {
+      if (res.success && res.data) {
+        setRollerModifier(0, res.data.rollers.mc1)
+        setRollerModifier(1, res.data.rollers.mc2)
+        setRollerModifier(2, res.data.rollers.mc3)
+        setRollerModifier(3, res.data.rollers.mc4)
+        setRollerHighModifier(0, res.data.highRollers.mc1)
+        setRollerHighModifier(1, res.data.highRollers.mc2)
+        setRollerHighModifier(2, res.data.highRollers.mc3)
+        setRollerHighModifier(3, res.data.highRollers.mc4)
+        setConveyorValue(Math.min(9999, Math.max(0, Math.round(res.data.conveyor))))
+      }
+    })
+
     wsService.connect()
 
     const unsubMsg = wsService.onMessage((msg: WebSocketMessage) => {
@@ -40,19 +53,6 @@ export function HomePage() {
 
       if (msg.type === 'machineState' && msg.payload) {
         const p = msg.payload as Record<string, unknown>
-
-        if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1)
-        if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2)
-        if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3)
-        if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4)
-        if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High)
-        if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High)
-        if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High)
-        if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High)
-        if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
-        if (!initialLoadDone.current) {
-          initialLoadDone.current = true
-        }
 
         if (typeof p.speed1 === 'number') setRollerActualSpeed(0, p.speed1)
         if (typeof p.speed2 === 'number') setRollerActualSpeed(1, p.speed2)
@@ -110,8 +110,8 @@ export function HomePage() {
     try {
       await writeConveyorSpeed(conveyorValue)
       toast('success', `Conveyor set to ${conveyorValue}`)
-    } catch {
-      toast('error', 'Failed to set Conveyor speed')
+    } catch (err) {
+      toast('error', err instanceof Error ? err.message : 'Failed to set Conveyor speed')
     } finally {
       setConveyorSetting(false)
     }

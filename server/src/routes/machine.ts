@@ -7,7 +7,7 @@ const router = Router()
 
 router.get('/', async (_req, res) => {
   try {
-    const state = await modbusService.readMachineState()
+    const state = await modbusService.readAllState()
     const response: ApiResponse<MachineStateResponse> = {
       success: true,
       data: {

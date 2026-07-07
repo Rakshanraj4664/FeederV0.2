@@ -71,7 +71,7 @@ export const useMachineStore = create<MachineStore>()(
           return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
         }),
 
-      setConveyorValue: (value) => set({ conveyorValue: value, lastUpdate: new Date().toISOString() }),
+      setConveyorValue: (value) => set({ conveyorValue: Math.min(9999, Math.max(0, Math.round(value))), lastUpdate: new Date().toISOString() }),
 
       loadRollerValues: (modifiers, highModifiers, conveyor) =>
         set((state) => {
@@ -124,6 +124,11 @@ export const useMachineStore = create<MachineStore>()(
         savedRollers: state.savedRollers,
         savedConveyor: state.savedConveyor,
       } as PersistedState),
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as Partial<MachineStore>) }
+        merged.conveyorValue = Math.min(9999, Math.max(0, Math.round(merged.conveyorValue)))
+        return merged
+      },
     }
   )
 )

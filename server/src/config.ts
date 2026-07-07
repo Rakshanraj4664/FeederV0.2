@@ -31,6 +31,8 @@ export const CONFIG = {
       CONTRACT: 2004,
     },
     CONVEYOR: 20026,
+    CONVEYOR_MIN: 0,
+    CONVEYOR_MAX: 9999,
     BASE_FREQUENCY: 32010,
     MODIFIER_MIN: 0,
     MODIFIER_MAX: 50,

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { modbusService } from '../services/ModbusService.js'
-import { validateSpeedValue, validateWidthGap, validateWidthOffset } from '../utils/validators.js'
+import { logger } from '../services/LoggerService.js'
+import { validateSpeedValue, validateWidthGap, validateWidthOffset, validateConveyorValue } from '../utils/validators.js'
 import { CONFIG } from '../config.js'
 import type { ApiResponse } from '../types/api.js'
 
@@ -108,11 +109,12 @@ MC_ENDPOINTS.forEach(({ param, axis }) => {
 })
 
 router.post('/conveyor', async (req, res) => {
-  const value = validateSpeedValue(req.body.value)
+  const value = validateConveyorValue(req.body.value)
   if (value === null) {
+    logger.warn('app', `Invalid conveyor value: ${JSON.stringify(req.body.value)}`)
     const response: ApiResponse = {
       success: false,
-      error: `Invalid value. Must be ${CONFIG.REGISTERS.MODIFIER_MIN}-${CONFIG.REGISTERS.MODIFIER_MAX}`,
+      error: `Invalid value. Must be ${CONFIG.REGISTERS.CONVEYOR_MIN}-${CONFIG.REGISTERS.CONVEYOR_MAX}`,
       timestamp: new Date().toISOString(),
     }
     res.status(400).json(response)
