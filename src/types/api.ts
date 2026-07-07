@@ -50,17 +50,6 @@ export interface WidthWriteRequest {
   offset: number
 }
 
-export interface VerifyResponse {
-  trusted: boolean
-  token: string
-  deviceId: string
-}
-
-export interface AuthCheckResponse {
-  trusted: boolean
-  deviceId?: string
-}
-
 export interface WebSocketMessage {
   type: 'status' | 'machineState' | 'registerUpdate' | 'error' | 'connection' | 'profiles_changed'
   payload: Record<string, unknown>

@@ -15,8 +15,6 @@ import machineRouter from './routes/machine.js'
 import registersRouter from './routes/registers.js'
 import speedRouter from './routes/speed.js'
 import profilesRouter from './routes/profiles.js'
-import authRouter from './routes/auth.js'
-import { requireAuth } from './middleware/auth.js'
 
 const app = express()
 const server = createServer(app)
@@ -36,8 +34,12 @@ app.use('/api/machine', machineRouter)
 app.use('/api/registers', registersRouter)
 app.use('/api/speed', speedRouter)
 app.use('/api', speedRouter)  // width endpoint
-app.use('/api/profiles', requireAuth, profilesRouter)
-app.use('/api/auth', authRouter)
+app.use('/api/profiles', profilesRouter)
+
+// Auth endpoints removed — return success for any lingering calls
+app.all('/api/auth*', (_req, res) => {
+  res.json({ success: true, data: { trusted: true }, timestamp: new Date().toISOString() })
+})
 
 // Health check
 app.get('/api/health', (_req, res) => {

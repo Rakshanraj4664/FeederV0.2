@@ -15,7 +15,6 @@ import { AnimatedValue } from './AnimatedValue'
 import { getPlcWidth } from '@/services/plc'
 import { writeWidth } from '@/services/api'
 import { toast } from '@/components/common/Toast'
-import { useAuthStore } from '@/store/authStore'
 
 const DEFAULT_LEFT = 400
 const DEFAULT_RIGHT = 2000
@@ -30,7 +29,8 @@ const CONTRACT_REGISTER = 2004
 const mmToPct = (mm: number) => (mm / RAIL_LENGTH_MM) * 100
 
 export function WidthControlSection() {
-  const isTrusted = useAuthStore((s) => s.isTrusted)
+  // Auth disabled — isTrusted always true
+  const isTrusted = true
   const [leftPlateOuter, setLeftPlateOuter] = useState(DEFAULT_LEFT)
   const [rightPlateOuter, setRightPlateOuter] = useState(DEFAULT_RIGHT)
   const [savedLeft, setSavedLeft] = useState(DEFAULT_LEFT)

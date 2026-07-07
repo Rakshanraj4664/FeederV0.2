@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import { modbusService } from '../services/ModbusService.js'
-import { deviceVerification } from '../services/DeviceVerificationService.js'
 import { CONFIG } from '../config.js'
 import type { ApiResponse } from '../types/api.js'
 
@@ -21,8 +20,6 @@ router.get('/', async (_req, res) => {
       piOnline: true,
       uptime: modbusService.uptime,
       version: '1.0.0',
-      whitelistCount: deviceVerification.getWhitelistCount(),
-      activeSessions: deviceVerification.getActiveSessions(),
       config: {
         plcIp: CONFIG.PLC_IP,
         piIp: CONFIG.PI_IP,

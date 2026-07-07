@@ -152,9 +152,9 @@ router.post('/width', async (req, res) => {
   }
 
   try {
-    await modbusService.writeRegister(CONFIG.REGISTERS.WIDTH.EXPAND, gap)
+    await modbusService.writeFloat(CONFIG.REGISTERS.WIDTH.EXPAND, gap)
     if (offset !== null) {
-      await modbusService.writeRegister(CONFIG.REGISTERS.WIDTH.CONTRACT, Math.abs(offset))
+      await modbusService.writeFloat(CONFIG.REGISTERS.WIDTH.CONTRACT, Math.abs(offset))
     }
     const response: ApiResponse = {
       success: true,

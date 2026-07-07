@@ -1,5 +1,4 @@
 import type { Profile } from '@/types/machine'
-import { useAuthStore } from '@/store/authStore'
 
 interface ProfileCardProps {
   profile: Profile
@@ -12,7 +11,8 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ profile, selected, onSelect, onSet, onEdit, onClone, onDelete }: ProfileCardProps) {
-  const isTrusted = useAuthStore((s) => s.isTrusted)
+  // Auth disabled — isTrusted always true
+  const isTrusted = true
   return (
     <div
       onClick={() => onSelect(profile)}

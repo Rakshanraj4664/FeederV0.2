@@ -41,16 +41,16 @@ export function HomePage() {
       if (msg.type === 'machineState' && msg.payload) {
         const p = msg.payload as Record<string, unknown>
 
+        if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1)
+        if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2)
+        if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3)
+        if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4)
+        if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High)
+        if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High)
+        if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High)
+        if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High)
+        if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
         if (!initialLoadDone.current) {
-          if (typeof p.mc1 === 'number') setRollerModifier(0, p.mc1)
-          if (typeof p.mc2 === 'number') setRollerModifier(1, p.mc2)
-          if (typeof p.mc3 === 'number') setRollerModifier(2, p.mc3)
-          if (typeof p.mc4 === 'number') setRollerModifier(3, p.mc4)
-          if (typeof p.mc1High === 'number') setRollerHighModifier(0, p.mc1High)
-          if (typeof p.mc2High === 'number') setRollerHighModifier(1, p.mc2High)
-          if (typeof p.mc3High === 'number') setRollerHighModifier(2, p.mc3High)
-          if (typeof p.mc4High === 'number') setRollerHighModifier(3, p.mc4High)
-          if (typeof p.conveyor === 'number') setConveyorValue(p.conveyor)
           initialLoadDone.current = true
         }
 

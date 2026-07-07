@@ -36,7 +36,6 @@ export const CONFIG = {
     MODIFIER_MAX: 50,
   },
 
-  WHITELIST_PATH: './whitelist.txt',
   LOG_DIR: './logs',
   PROFILES_DATA_PATH: './data/profiles.json',
 

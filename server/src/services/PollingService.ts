@@ -66,6 +66,7 @@ class PollingService {
           this.lastState = stateStr
         }
       } else {
+        modbusService.connectPLC()
         this.broadcast?.(JSON.stringify({
           type: 'status',
           payload: { plcOnline: false, running: false },

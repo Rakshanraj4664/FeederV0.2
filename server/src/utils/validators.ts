@@ -6,7 +6,7 @@ export function validateSpeedValue(value: unknown): number | null {
   if (num < CONFIG.REGISTERS.MODIFIER_MIN || num > CONFIG.REGISTERS.MODIFIER_MAX) {
     return null
   }
-  return Math.round(num)
+  return num
 }
 
 export function validateWidthGap(value: unknown): number | null {

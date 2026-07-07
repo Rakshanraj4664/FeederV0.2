@@ -1,3 +1,0 @@
-# Device Whitelist
-# Format: MAC_ADDRESS or DEVICE_ID
-DEVICE-BL47L80P

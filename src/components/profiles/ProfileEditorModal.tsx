@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { RollerCard } from '@/components/machine/RollerCard'
 import { ConveyorCard } from '@/components/machine/ConveyorCard'
-import { useAuthStore } from '@/store/authStore'
 
 interface RollerData {
   modifier: number
@@ -17,7 +16,8 @@ interface ProfileEditorModalProps {
 }
 
 export function ProfileEditorModal({ profileName, initialRollers, initialConveyor, onConfirm, onClose }: ProfileEditorModalProps) {
-  const isTrusted = useAuthStore((s) => s.isTrusted)
+  // Auth disabled — isTrusted always true
+  const isTrusted = true
   const [rollers, setRollers] = useState<RollerData[]>(initialRollers)
   const [conveyor, setConveyor] = useState(initialConveyor)
 
