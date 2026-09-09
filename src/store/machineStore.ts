@@ -11,8 +11,6 @@ interface MachineStore extends MachineState, MachineStatus {
   setRollerActualSpeed: (index: number, actualSpeed: number) => void
   setConveyorValue: (value: number) => void
   loadRollerValues: (modifiers: number[], highModifiers: number[], conveyor: number) => void
-  setWidthGap: (gap: number) => void
-  setWidthOffset: (offset: number) => void
   setEmergencyStop: (active: boolean) => void
   setSavedRollers: (saved: { modifier: number; highModifier: number }[] | null) => void
   setSavedConveyor: (value: number) => void
@@ -25,7 +23,7 @@ interface MachineStore extends MachineState, MachineStatus {
   setSelectedRoller: (index: number) => void
 }
 
-type PersistedState = Pick<MachineStore, 'rollers' | 'widthGap' | 'widthOffset' | 'emergencyStop' | 'running' | 'conveyorValue' | 'selectedRoller' | 'savedRollers' | 'savedConveyor'>
+type PersistedState = Pick<MachineStore, 'rollers' | 'emergencyStop' | 'running' | 'conveyorValue' | 'selectedRoller' | 'savedRollers' | 'savedConveyor'>
 
 export const useMachineStore = create<MachineStore>()(
   persist(
@@ -36,8 +34,6 @@ export const useMachineStore = create<MachineStore>()(
         { modifier: 0, highModifier: 0, actualSpeed: 0, enabled: true },
         { modifier: 0, highModifier: 0, actualSpeed: 0, enabled: true },
       ],
-      widthGap: 800,
-      widthOffset: 0,
       emergencyStop: false,
       running: false,
       conveyorValue: 0,
@@ -71,7 +67,7 @@ export const useMachineStore = create<MachineStore>()(
           return { rollers: rollers as MachineStore['rollers'], lastUpdate: new Date().toISOString() }
         }),
 
-      setConveyorValue: (value) => set({ conveyorValue: Math.min(9999, Math.max(0, Math.round(value))), lastUpdate: new Date().toISOString() }),
+      setConveyorValue: (value) => set({ conveyorValue: Math.min(50, Math.max(0, Math.round(value))), lastUpdate: new Date().toISOString() }),
 
       loadRollerValues: (modifiers, highModifiers, conveyor) =>
         set((state) => {
@@ -86,8 +82,6 @@ export const useMachineStore = create<MachineStore>()(
           return { rollers, conveyorValue: conveyor, lastUpdate: new Date().toISOString() }
         }),
 
-      setWidthGap: (gap) => set({ widthGap: gap, lastUpdate: new Date().toISOString() }),
-      setWidthOffset: (offset) => set({ widthOffset: offset, lastUpdate: new Date().toISOString() }),
       setEmergencyStop: (active) => set({ emergencyStop: active }),
       setSavedRollers: (saved) => set({ savedRollers: saved }),
       setSavedConveyor: (value) => set({ savedConveyor: value }),
@@ -115,8 +109,6 @@ export const useMachineStore = create<MachineStore>()(
       name: 'feeder-machine-state',
       partialize: (state) => ({
         rollers: state.rollers,
-        widthGap: state.widthGap,
-        widthOffset: state.widthOffset,
         emergencyStop: state.emergencyStop,
         running: state.running,
         conveyorValue: state.conveyorValue,
@@ -126,7 +118,7 @@ export const useMachineStore = create<MachineStore>()(
       } as PersistedState),
       merge: (persisted, current) => {
         const merged = { ...current, ...(persisted as Partial<MachineStore>) }
-        merged.conveyorValue = Math.min(9999, Math.max(0, Math.round(merged.conveyorValue)))
+        merged.conveyorValue = Math.min(50, Math.max(0, Math.round(merged.conveyorValue)))
         return merged
       },
     }

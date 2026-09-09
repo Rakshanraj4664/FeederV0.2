@@ -1,27 +1,27 @@
 [
   {
-    "id": "profile_1_1783339034986",
+    "id": "profile_1_1784359328965",
     "name": "1",
     "rollers": [
       {
-        "modifier": 23,
-        "highModifier": 39
+        "modifier": 13,
+        "highModifier": 20
       },
       {
-        "modifier": 26,
-        "highModifier": 36
+        "modifier": 28,
+        "highModifier": 26
       },
       {
-        "modifier": 22,
-        "highModifier": 39
+        "modifier": 16,
+        "highModifier": 17
       },
       {
-        "modifier": 27,
-        "highModifier": 39
+        "modifier": 29,
+        "highModifier": 24
       }
     ],
-    "conveyorSpeed": 3362,
-    "createdAt": "2026-07-06T11:57:14.986Z",
-    "updatedAt": "2026-07-06T11:57:14.986Z"
+    "conveyorSpeed": 46,
+    "createdAt": "2026-07-18T07:22:08.965Z",
+    "updatedAt": "2026-07-18T07:22:08.965Z"
   }
 ]

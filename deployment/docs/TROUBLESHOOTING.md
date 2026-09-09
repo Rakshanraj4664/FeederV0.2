@@ -21,8 +21,8 @@ Common issues, diagnostic procedures, log analysis, and emergency recovery for t
 
 | Symptom | Most Likely Cause | First Command to Run |
 |---------|-------------------|----------------------|
-| Blank page at `http://192.168.1.50` | Frontend build missing or nginx down | `sudo systemctl status nginx` |
-| "PLC Offline" shown on HMI | PLC unreachable or Modbus port blocked | `ping 192.168.1.5` |
+| Blank page at `http://192.168.1.60` | Frontend build missing or nginx down | `sudo systemctl status nginx` |
+| "PLC Offline" shown on HMI | PLC unreachable or Modbus port blocked | `ping 192.168.1.6` |
 | Slider moves but machine doesn't respond | Modbus write failing | `pm2 logs feeder-backend --lines 20` |
 | WebSocket keeps disconnecting | Nginx WebSocket proxy misconfig | `sudo nginx -t` |
 | 502 Bad Gateway | Backend process crashed | `pm2 status` |
@@ -44,10 +44,10 @@ Common issues, diagnostic procedures, log analysis, and emergency recovery for t
 
 ```bash
 # Step 1: Is the PLC physically reachable?
-ping -c 3 192.168.1.5
+ping -c 3 192.168.1.6
 
 # Step 2: Is port 502 open?
-nc -zv 192.168.1.5 502
+nc -zv 192.168.1.6 502
 
 # Step 3: Check backend logs for Modbus errors
 pm2 logs feeder-backend --lines 30
@@ -59,10 +59,10 @@ curl http://localhost:5000/api/status
 
 # Step 5: Check firewall rules
 sudo ufw status verbose
-# Verify: 502/tcp ALLOW OUT to 192.168.1.5
+# Verify: 502/tcp ALLOW OUT to 192.168.1.6
 
 # Step 6: Test Modbus directly from command line
-modbus-cli read -h 192.168.1.5 -p 502 -a 20002 -c 1 -t holding
+modbus-cli read -h 192.168.1.6 -p 502 -a 20002 -c 1 -t holding
 ```
 
 ### 2.3 — Solutions
@@ -71,12 +71,12 @@ modbus-cli read -h 192.168.1.5 -p 502 -a 20002 -c 1 -t holding
 |-------|----------|
 | Ethernet cable unplugged | Check cable at Pi and PLC |
 | PLC powered off | Power on PLC, check LED status |
-| Wrong PLC IP | Verify PLC IP is `192.168.1.5` |
+| Wrong PLC IP | Verify PLC IP is `192.168.1.6` |
 | Wrong subnet | Both Pi and PLC must be on `192.168.1.0/24` |
 | PLC in STOP mode | Set PLC to RUN mode |
 | Modbus TCP disabled on PLC | Enable Modbus TCP server in PLC configuration |
-| Firewall blocking outbound 502 | `sudo ufw allow out on eth0 to 192.168.1.5 port 502` |
-| IP conflict | `arp-scan --localnet \| grep 192.168.1.5` |
+| Firewall blocking outbound 502 | `sudo ufw allow out on eth0 to 192.168.1.6 port 502` |
+| IP conflict | `arp-scan --localnet \| grep 192.168.1.6` |
 | Backend in mock mode | Set `NODE_ENV=production` in PM2 ecosystem config |
 
 ### 2.4 — Reconnection Behavior
@@ -113,7 +113,7 @@ wscat -c ws://localhost:5000/ws
 # Expected: immediate JSON status message every 100ms
 
 # Step 2: Check WS through nginx proxy
-wscat -c ws://192.168.1.50/ws
+wscat -c ws://192.168.1.60/ws
 # Expected: same as above
 
 # Step 3: Check nginx WebSocket proxy config
@@ -144,7 +144,7 @@ In the tablet browser's Developer Console:
 
 ```javascript
 // Check WebSocket connection
-const ws = new WebSocket('ws://192.168.1.50/ws')
+const ws = new WebSocket('ws://192.168.1.60/ws')
 ws.onmessage = (e) => console.log(JSON.parse(e.data))
 ws.onclose = (e) => console.log('Closed:', e.code, e.reason)
 ws.onerror = (e) => console.error('Error:', e)
@@ -179,7 +179,7 @@ curl -X POST http://localhost:5000/api/speed \
 curl http://localhost:5000/api/machine
 
 # Step 4: Check Modbus directly
-modbus-cli read -h 192.168.1.5 -p 502 -a 20002 -c 1 -t holding
+modbus-cli read -h 192.168.1.6 -p 502 -a 20002 -c 1 -t holding
 
 # Step 5: Check browser console for network errors
 # Look for failed POST requests to /api/speed
@@ -201,7 +201,7 @@ If sliders are not responding and the machine needs to stop:
 
 ```bash
 # Trigger emergency stop via API
-curl -X POST http://192.168.1.50/api/machine/emergency-stop
+curl -X POST http://192.168.1.60/api/machine/emergency-stop
 
 # This writes 0 to all four modifier registers
 ```
@@ -212,7 +212,7 @@ curl -X POST http://192.168.1.50/api/machine/emergency-stop
 
 ### 5.1 — Symptoms
 
-- Browser shows "502 Bad Gateway" when loading `http://192.168.1.50`
+- Browser shows "502 Bad Gateway" when loading `http://192.168.1.60`
 - `curl http://localhost` returns HTML with 502 status
 - `curl http://localhost/api/health` returns HTML 502
 
@@ -289,7 +289,7 @@ free -h
 # If the PLC scan cycle exceeds 100ms, the 100ms poll interval will stack
 
 # Step 5: Check network latency
-ping -c 10 192.168.1.5
+ping -c 10 192.168.1.6
 # Expected: rtt avg < 1ms on a local network
 ```
 
@@ -369,7 +369,7 @@ pm2 logs --lines 100 --nostream
 Log format example:
 
 ```
-2026-06-24 12:00:00 [INFO]  [modbus] PLC connected at 192.168.1.5:502
+2026-06-24 12:00:00 [INFO]  [modbus] PLC connected at 192.168.1.6:502
 2026-06-24 12:00:01 [ERROR] [modbus] Failed to read register 20002
 2026-06-24 12:00:02 [INFO]  [system] WebSocket client connected
 ```
@@ -414,11 +414,11 @@ sudo truncate -s 0 /var/log/nginx/error.log
 #    - Ethernet link LEDs are lit on Pi, switch, and PLC
 
 # 2. Check network
-ping -c 2 192.168.1.50     # Can you reach the Pi?
-ping -c 2 192.168.1.5      # Can the Pi reach the PLC?
+ping -c 2 192.168.1.60     # Can you reach the Pi?
+ping -c 2 192.168.1.6      # Can the Pi reach the PLC?
 
 # 3. Check services
-ssh pi@192.168.1.50
+ssh pi@192.168.1.60
 sudo systemctl status nginx
 pm2 status
 
@@ -436,7 +436,7 @@ If the Pi is unresponsive (no SSH, no web):
 
 ```bash
 # Step 1: Attempt SSH with verbose output
-ssh -vvv pi@192.168.1.50
+ssh -vvv pi@192.168.1.60
 
 # Step 2: If no response, check if Pi is powered
 #    - Red LED should be solid
@@ -447,7 +447,7 @@ ssh -vvv pi@192.168.1.50
 #    - Or use a remote power switch / PoE if available
 
 # Step 4: Wait 2 minutes, try SSH again
-ssh pi@192.168.1.50
+ssh pi@192.168.1.60
 pm2 status
 sudo systemctl status nginx
 ```
@@ -521,8 +521,8 @@ pm2 restart feeder-backend
 
 # Option 3: Use a laptop with modbus-cli directly connected to the PLC
 # Laptop IP: 192.168.1.100
-modbus-cli read -h 192.168.1.5 -p 502 -a 20002 -c 1 -t holding
-modbus-cli write -h 192.168.1.5 -p 502 -a 20002 -t holding 0  # Emergency stop
+modbus-cli read -h 192.168.1.6 -p 502 -a 20002 -c 1 -t holding
+modbus-cli write -h 192.168.1.6 -p 502 -a 20002 -t holding 0  # Emergency stop
 ```
 
 ### 8.7 — Emergency Stop Activation
@@ -534,10 +534,10 @@ If the HMI frontend is not responding but SSH is available:
 curl -X POST http://localhost:5000/api/machine/emergency-stop
 
 # Via Modbus directly (writes 0 to all modifier registers)
-modbus-cli write -h 192.168.1.5 -p 502 -a 20002 -t holding 0
-modbus-cli write -h 192.168.1.5 -p 502 -a 20008 -t holding 0
-modbus-cli write -h 192.168.1.5 -p 502 -a 20014 -t holding 0
-modbus-cli write -h 192.168.1.5 -p 502 -a 20020 -t holding 0
+modbus-cli write -h 192.168.1.6 -p 502 -a 20002 -t holding 0
+modbus-cli write -h 192.168.1.6 -p 502 -a 20008 -t holding 0
+modbus-cli write -h 192.168.1.6 -p 502 -a 20014 -t holding 0
+modbus-cli write -h 192.168.1.6 -p 502 -a 20020 -t holding 0
 ```
 
 ### 8.8 — Contact Information

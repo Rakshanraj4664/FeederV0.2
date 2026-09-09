@@ -2,7 +2,7 @@
 
 ## Modbus Holding Register Addresses
 
-All registers are **Modbus Holding Registers** (function codes 0x03 read, 0x06 write) on the **Delta AS Series PLC** at `192.168.1.5:502`. Each register is 16-bit unsigned.
+All registers are **Modbus Holding Registers** (function codes 0x03 read, 0x06 write) on the **Delta AS Series PLC** at `192.168.1.6:502`. Each register is 16-bit unsigned.
 
 Delta AS series addressing: `D` registers map directly to Modbus holding register addresses (e.g. D20002 → address 20002). `X` inputs map to Modbus discrete inputs starting at address 0 (X0.0 → address 0).
 

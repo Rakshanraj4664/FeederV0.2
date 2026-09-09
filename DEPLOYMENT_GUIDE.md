@@ -4,7 +4,7 @@
 
 - **Hardware:** Raspberry Pi 4 (2GB+ RAM recommended)
 - **OS:** Raspberry Pi OS Lite (Bookworm) 64-bit — `2024-07-04-raspios-bookworm-arm64-lite.img.xz` or later
-- **Network:** Local LAN with PLC at `192.168.1.5`, Pi assigned `192.168.1.50`
+- **Network:** Local LAN with PLC at `192.168.1.6`, Pi assigned `192.168.1.60`
 - **Storage:** 16GB+ microSD, 8GB+ free space after OS
 - **Power:** 5V/3A USB-C power supply (official Pi PSU recommended)
 
@@ -96,7 +96,7 @@ sudo bash deployment/scripts/setup-network.sh
 ```
 
 What it does:
-- Sets static IP `192.168.1.50/24` on the active interface
+- Sets static IP `192.168.1.60/24` on the active interface
 - Gateway `192.168.1.1`
 - DNS `8.8.8.8`, `1.1.1.1`
 - Configures firewall rules for HMI traffic (ports 80, 5000, 502 from `192.168.1.0/24`)
@@ -108,7 +108,7 @@ What it does:
 sudo reboot
 ```
 
-After reboot, reconnect via SSH to `192.168.1.50`.
+After reboot, reconnect via SSH to `192.168.1.60`.
 
 ### 8. Configure and Start Services
 
@@ -152,7 +152,7 @@ ufw status
 Open a browser on the tablet and navigate to:
 
 ```
-http://192.168.1.50
+http://192.168.1.60
 ```
 
 ---
@@ -182,8 +182,8 @@ docker logs feeder-frontend
 ### Docker Architecture
 
 ```
-  Container: feeder-frontend (Nginx, port 80, IP 192.168.1.51)
-  Container: feeder-backend  (Node,   port 5000, IP 192.168.1.50)
+  Container: feeder-frontend (Nginx, port 80, IP 192.168.1.61)
+  Container: feeder-backend  (Node,   port 5000, IP 192.168.1.60)
 
   Both on bridge network "feeder-net" (subnet 192.168.1.0/24)
 ```
@@ -198,13 +198,13 @@ The frontend container serves the built static files via Nginx and proxies `/api
 
 | Check                          | Command / Method                          |
 |--------------------------------|-------------------------------------------|
-| Pi is reachable at 192.168.1.50 | `ping 192.168.1.50`                      |
-| Frontend loads                 | Browse `http://192.168.1.50`             |
-| API responds                   | `curl http://192.168.1.50/api/health`    |
-| WebSocket connects             | `wscat -c ws://192.168.1.50/ws`          |
-| PLC communication              | `curl http://192.168.1.50/api/status`    |
-| PLC registers readable         | `curl http://192.168.1.50/api/registers` |
-| Modbus TCP reachable           | `nc -zv 192.168.1.5 502`                |
+| Pi is reachable at 192.168.1.60 | `ping 192.168.1.60`                      |
+| Frontend loads                 | Browse `http://192.168.1.60`             |
+| API responds                   | `curl http://192.168.1.60/api/health`    |
+| WebSocket connects             | `wscat -c ws://192.168.1.60/ws`          |
+| PLC communication              | `curl http://192.168.1.60/api/status`    |
+| PLC registers readable         | `curl http://192.168.1.60/api/registers` |
+| Modbus TCP reachable           | `nc -zv 192.168.1.6 502`                |
 | PM2 processes running          | `pm2 status`                             |
 | Nginx reverse proxy working    | `curl -v http://localhost/api/status`    |
 | Firewall allows HMI traffic    | `ufw status verbose`                     |
@@ -215,7 +215,7 @@ The frontend container serves the built static files via Nginx and proxies `/api
 ```
 Problem: Frontend loads but shows "PLC OFFLINE"
   → Check Modbus connection: curl http://localhost:5000/api/status
-  → Verify PLC IP: ping 192.168.1.5
+  → Verify PLC IP: ping 192.168.1.6
   → Check firewall: ufw status (ensure port 502 allowed)
 
 Problem: WebSocket not connecting
@@ -223,7 +223,7 @@ Problem: WebSocket not connecting
   → Check Nginx proxy: systemctl status nginx
   → Check backend logs: pm2 logs feeder-backend
 
-Problem: Can't reach Pi at 192.168.1.50
+Problem: Can't reach Pi at 192.168.1.60
   → Check physical Ethernet connection
   → Verify static IP: ip addr show
   → Connect monitor/keyboard to debug

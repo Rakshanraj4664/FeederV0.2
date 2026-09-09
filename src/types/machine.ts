@@ -7,8 +7,6 @@ export interface RollerState {
 
 export interface MachineState {
   rollers: [RollerState, RollerState, RollerState, RollerState]
-  widthGap: number
-  widthOffset: number
   emergencyStop: boolean
   running: boolean
   conveyorValue: number

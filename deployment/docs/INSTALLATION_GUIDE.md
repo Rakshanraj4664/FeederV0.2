@@ -41,8 +41,8 @@ Complete step-by-step guide to set up the Feeder Machine HMI on a Raspberry Pi f
 
 | Device | IP Address | Purpose |
 |--------|-----------|---------|
-| Raspberry Pi | `192.168.1.50` (static) | HMI server |
-| PLC | `192.168.1.5` | Modbus TCP target |
+| Raspberry Pi | `192.168.1.60` (static) | HMI server |
+| PLC | `192.168.1.6` | Modbus TCP target |
 | Tablet | `192.168.1.x` (DHCP) | Web browser client |
 
 ---
@@ -107,7 +107,7 @@ On Windows, this is the only partition visible after writing the image (typicall
 ### Step 3.2 — SSH into the Pi
 
 ```bash
-ssh pi@192.168.1.50
+ssh pi@192.168.1.60
 ```
 
 If DHCP assigned a different IP, use that address. You will set the static IP in [Section 6](#6-configure-network).
@@ -216,7 +216,7 @@ From your development machine:
 
 ```bash
 # From project root
-scp -r . pi@192.168.1.50:/opt/feeder-hmi
+scp -r . pi@192.168.1.60:/opt/feeder-hmi
 ```
 
 ### Option C — Use a USB Drive
@@ -265,7 +265,7 @@ This script:
 
 - Detects the active network interface
 - Appends static IP configuration to `/etc/dhcpcd.conf`
-  - IP: `192.168.1.50/24`
+  - IP: `192.168.1.60/24`
   - Gateway: `192.168.1.1`
   - DNS: `8.8.8.8`, `1.1.1.1`
 - Configures UFW firewall rules for ports 80, 5000, and 502
@@ -281,7 +281,7 @@ After reboot, confirm the IP:
 
 ```bash
 hostname -I
-# Expected: 192.168.1.50
+# Expected: 192.168.1.60
 ```
 
 ---
@@ -355,7 +355,7 @@ Expected: `active (running)`
 From a tablet or computer on the same network, open:
 
 ```
-http://192.168.1.50
+http://192.168.1.60
 ```
 
 You should see the Feeder Machine HMI dashboard.
@@ -363,7 +363,7 @@ You should see the Feeder Machine HMI dashboard.
 ### API
 
 ```bash
-curl http://192.168.1.50/api/health
+curl http://192.168.1.60/api/health
 ```
 
 Expected response:
@@ -378,7 +378,7 @@ Expected response:
 # Install wscat if needed
 sudo npm install -g wscat
 
-wscat -c ws://192.168.1.50/ws
+wscat -c ws://192.168.1.60/ws
 ```
 
 You should immediately receive a status message:
@@ -392,7 +392,7 @@ You should immediately receive a status message:
 If the PLC is connected and powered on:
 
 ```bash
-curl http://192.168.1.50/api/status
+curl http://192.168.1.60/api/status
 ```
 
 Expected response includes modbus connection state and PLC uptime.
@@ -406,7 +406,7 @@ Expected response includes modbus connection state and PLC uptime.
 | `curl: Connection refused` on port 80 | Nginx not running | `sudo systemctl status nginx` |
 | `502 Bad Gateway` from nginx | Backend not running | `pm2 status` |
 | WebSocket won't connect | Nginx WebSocket proxy misconfigured | Check `/ws` location block in nginx config |
-| PLC shows offline | Modbus connectivity | `ping 192.168.1.5` from the Pi |
+| PLC shows offline | Modbus connectivity | `ping 192.168.1.6` from the Pi |
 | Frontend shows white screen | Build missing or path wrong | Check `/opt/feeder-hmi/dist/index.html` exists |
 
 For detailed troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

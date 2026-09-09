@@ -14,8 +14,6 @@ router.get('/', async (_req, res) => {
         rollers: { mc1: state.mc1, mc2: state.mc2, mc3: state.mc3, mc4: state.mc4 },
         highRollers: { mc1: state.mc1High, mc2: state.mc2High, mc3: state.mc3High, mc4: state.mc4High },
         speeds: { axis1: state.speed1, axis2: state.speed2, axis3: state.speed3, axis4: state.speed4 },
-        widthGap: state.widthGap,
-        widthOffset: state.widthOffset,
         conveyor: state.conveyor,
       },
       timestamp: new Date().toISOString(),

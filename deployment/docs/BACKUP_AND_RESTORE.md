@@ -184,10 +184,10 @@ From your development machine:
 
 ```bash
 # SCP the latest backup
-scp pi@192.168.1.50:/opt/backups/feeder-hmi-*.tar.gz /local/backup/directory/
+scp pi@192.168.1.60:/opt/backups/feeder-hmi-*.tar.gz /local/backup/directory/
 
 # Or use rsync
-rsync -avz pi@192.168.1.50:/opt/backups/ /local/backup/directory/
+rsync -avz pi@192.168.1.60:/opt/backups/ /local/backup/directory/
 ```
 
 ### 3.4 — Backup Configuration Files Only
@@ -355,10 +355,10 @@ If the backup was copied off-device and needs to be restored onto a fresh Pi:
 
 ```bash
 # Step 1: Copy backup to the Pi
-scp /local/path/feeder-hmi-20260624_030000.tar.gz pi@192.168.1.50:/tmp/
+scp /local/path/feeder-hmi-20260624_030000.tar.gz pi@192.168.1.60:/tmp/
 
 # Step 2: SSH into the Pi
-ssh pi@192.168.1.50
+ssh pi@192.168.1.60
 
 # Step 3: Run the restore from the copied file
 sudo bash /opt/feeder-hmi/deployment/scripts/restore-app.sh
@@ -490,7 +490,7 @@ Then push to a remote repository for off-device backup.
 
 ```bash
 # 1. SSH into the Pi
-ssh pi@192.168.1.50
+ssh pi@192.168.1.60
 
 # 2. Check what's wrong
 pm2 status
@@ -531,7 +531,7 @@ curl http://localhost/api/health
    - If no image exists, flash fresh OS + run install + restore
 3. Insert SD card into new Pi
 4. Connect Ethernet, power on
-5. Verify network: pi should come up on 192.168.1.50
+5. Verify network: pi should come up on 192.168.1.60
 6. Run restore-app.sh from the latest backup
 7. Verify application health
 ```

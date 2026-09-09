@@ -135,7 +135,7 @@ sudo reboot
 
 ## 4. Static IP Configuration
 
-The Pi must have a fixed IP of `192.168.1.50` on the machine network.
+The Pi must have a fixed IP of `192.168.1.60` on the machine network.
 
 ### Step 4.1 — Identify the Network Interface
 
@@ -157,7 +157,7 @@ Add at the end of the file:
 ```
 # Static IP for Feeder HMI
 interface eth0
-static ip_address=192.168.1.50/24
+static ip_address=192.168.1.60/24
 static routers=192.168.1.1
 static domain_name_servers=8.8.8.8 1.1.1.1
 ```
@@ -178,11 +178,11 @@ sudo reboot
 
 ```bash
 hostname -I
-# Expected: 192.168.1.50
+# Expected: 192.168.1.60
 ```
 
 If the IP is different, check:
-- No other device on the network uses `192.168.1.50`
+- No other device on the network uses `192.168.1.60`
 - The gateway `192.168.1.1` is reachable: `ping 192.168.1.1`
 - The `dhcpcd` service is running: `sudo systemctl status dhcpcd`
 
@@ -417,7 +417,7 @@ MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
 ```bash
 # From your development machine
 ssh-keygen -t ed25519 -C "feeder-hmi"
-ssh-copy-id pi@192.168.1.50
+ssh-copy-id pi@192.168.1.60
 ```
 
 ### Step 10.4 — Disable Password Authentication (after verifying key works)
@@ -471,7 +471,7 @@ sudo ufw allow from 192.168.1.0/24 to any port 80 proto tcp comment 'HMI Fronten
 sudo ufw allow from 127.0.0.1 to any port 5000 proto tcp comment 'Backend API local'
 
 # Modbus TCP to PLC
-sudo ufw allow out on eth0 to 192.168.1.5 port 502 proto tcp comment 'Modbus PLC'
+sudo ufw allow out on eth0 to 192.168.1.6 port 502 proto tcp comment 'Modbus PLC'
 
 # Enable firewall
 sudo ufw --force enable
@@ -496,7 +496,7 @@ To                         Action      From
 22/tcp                     ALLOW IN    192.168.1.0/24
 80/tcp                     ALLOW IN    192.168.1.0/24
 5000/tcp                   ALLOW IN    127.0.0.1
-502/tcp                    ALLOW OUT   192.168.1.5 (eth0)
+502/tcp                    ALLOW OUT   192.168.1.6 (eth0)
 ```
 
 ---

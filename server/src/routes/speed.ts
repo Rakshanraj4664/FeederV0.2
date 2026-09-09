@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { modbusService } from '../services/ModbusService.js'
 import { logger } from '../services/LoggerService.js'
-import { validateSpeedValue, validateWidthGap, validateWidthOffset, validateConveyorValue } from '../utils/validators.js'
+import { validateSpeedValue } from '../utils/validators.js'
 import { CONFIG } from '../config.js'
 import type { ApiResponse } from '../types/api.js'
 
@@ -109,12 +109,24 @@ MC_ENDPOINTS.forEach(({ param, axis }) => {
 })
 
 router.post('/conveyor', async (req, res) => {
-  const value = validateConveyorValue(req.body.value)
-  if (value === null) {
+  const rawValue = Number(req.body.value)
+  if (!Number.isFinite(rawValue)) {
     logger.warn('app', `Invalid conveyor value: ${JSON.stringify(req.body.value)}`)
     const response: ApiResponse = {
       success: false,
-      error: `Invalid value. Must be ${CONFIG.REGISTERS.CONVEYOR_MIN}-${CONFIG.REGISTERS.CONVEYOR_MAX}`,
+      error: 'Invalid value. Must be 0-50',
+      timestamp: new Date().toISOString(),
+    }
+    res.status(400).json(response)
+    return
+  }
+
+  const scaled = Math.round(rawValue * 100)
+  if (scaled < CONFIG.REGISTERS.CONVEYOR_MIN || scaled > CONFIG.REGISTERS.CONVEYOR_MAX) {
+    logger.warn('app', `Conveyor value out of range: ${rawValue}`)
+    const response: ApiResponse = {
+      success: false,
+      error: 'Invalid value. Must be 0-50',
       timestamp: new Date().toISOString(),
     }
     res.status(400).json(response)
@@ -122,10 +134,10 @@ router.post('/conveyor', async (req, res) => {
   }
 
   try {
-    await modbusService.writeConveyorSpeed(value)
+    await modbusService.writeConveyorSpeed(scaled)
     const response: ApiResponse = {
       success: true,
-      data: { value, speed: value * CONFIG.REGISTERS.BASE_FREQUENCY },
+      data: { value: rawValue, speed: scaled * CONFIG.REGISTERS.BASE_FREQUENCY },
       timestamp: new Date().toISOString(),
     }
     res.json(response)
@@ -133,41 +145,6 @@ router.post('/conveyor', async (req, res) => {
     const response: ApiResponse = {
       success: false,
       error: 'Failed to write conveyor speed',
-      timestamp: new Date().toISOString(),
-    }
-    res.status(503).json(response)
-  }
-})
-
-router.post('/width', async (req, res) => {
-  const gap = validateWidthGap(req.body.gap)
-  const offset = validateWidthOffset(req.body.offset ?? 0)
-
-  if (gap === null) {
-    const response: ApiResponse = {
-      success: false,
-      error: 'Invalid gap value (800-2000)',
-      timestamp: new Date().toISOString(),
-    }
-    res.status(400).json(response)
-    return
-  }
-
-  try {
-    await modbusService.writeFloat(CONFIG.REGISTERS.WIDTH.EXPAND, gap)
-    if (offset !== null) {
-      await modbusService.writeFloat(CONFIG.REGISTERS.WIDTH.CONTRACT, Math.abs(offset))
-    }
-    const response: ApiResponse = {
-      success: true,
-      data: { gap, offset: offset ?? 0 },
-      timestamp: new Date().toISOString(),
-    }
-    res.json(response)
-  } catch (err) {
-    const response: ApiResponse = {
-      success: false,
-      error: 'Failed to write width values',
       timestamp: new Date().toISOString(),
     }
     res.status(503).json(response)

@@ -8,7 +8,7 @@ interface ConveyorCardProps {
   hideSet?: boolean
 }
 
-const CONVEYOR_MAX = 9999
+const CONVEYOR_MAX = 50
 const CIRCUMFERENCE = 251.2
 
 export function ConveyorCard({ value, onValueChange, onSet, setting, hideSet }: ConveyorCardProps) {

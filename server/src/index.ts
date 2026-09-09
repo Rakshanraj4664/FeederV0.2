@@ -14,6 +14,7 @@ import statusRouter from './routes/status.js'
 import machineRouter from './routes/machine.js'
 import registersRouter from './routes/registers.js'
 import speedRouter from './routes/speed.js'
+import stepperRouter from './routes/stepper.js'
 import profilesRouter from './routes/profiles.js'
 
 const app = express()
@@ -33,7 +34,7 @@ app.use('/api/status', statusRouter)
 app.use('/api/machine', machineRouter)
 app.use('/api/registers', registersRouter)
 app.use('/api/speed', speedRouter)
-app.use('/api', speedRouter)  // width endpoint
+app.use('/api/stepper', stepperRouter)
 app.use('/api/profiles', profilesRouter)
 
 // Auth endpoints removed — return success for any lingering calls

@@ -19,7 +19,7 @@ Configuration guide for the Nginx reverse proxy, PM2 process management, environ
 
 ```
 ┌─────────────┐       ┌───────────────────────────────────────┐       ┌──────────┐
-│   Tablet    │──────▶│         Raspberry Pi 192.168.1.50      │       │   PLC    │
+│   Tablet    │──────▶│         Raspberry Pi 192.168.1.60      │       │   PLC    │
 │  (Browser)  │       │                                       │       │ 192.168. │
 │             │       │  ┌──────────┐    ┌──────────────────┐  │       │  1.5     │
 │  http://    │       │  │  Nginx   │───▶│ Frontend (:4173) │  │       │          │
@@ -60,7 +60,7 @@ It is deployed to:
 
 ```nginx
 # Feeder Machine HMI - Nginx Configuration
-# Raspberry Pi at 192.168.1.50
+# Raspberry Pi at 192.168.1.60
 
 upstream backend {
     server 127.0.0.1:5000;
@@ -334,9 +334,9 @@ The application configuration is defined in `server/src/config.ts`:
 ```typescript
 export const CONFIG = {
   PORT: 5000,
-  PLC_IP: '192.168.1.5',
+  PLC_IP: '192.168.1.6',
   PLC_PORT: 502,
-  PI_IP: '192.168.1.50',
+  PI_IP: '192.168.1.60',
   POLL_INTERVAL_MS: 100,
   RECONNECT_INTERVAL_MS: 3000,
   MAX_RECONNECT_ATTEMPTS: 10,
@@ -408,7 +408,7 @@ When the Raspberry Pi powers on:
 4. **Nginx starts** — `systemctl enable nginx` ensures it auto-starts
 5. **PM2 starts** — systemd runs `pm2-root.service` which loads the saved process list
 6. **PM2 resurrects processes** — `feeder-backend` and `feeder-frontend` start
-7. **Backend connects to PLC** — on startup, ModbusService attempts TCP connection to 192.168.1.5:502
+7. **Backend connects to PLC** — on startup, ModbusService attempts TCP connection to 192.168.1.6:502
 8. **Polling begins** — WebSocket broadcasts machine state at 100ms intervals
 
 ### 5.4 — Verifying Auto-Start
@@ -459,8 +459,8 @@ If automatic recovery fails:
 
 ```bash
 # Step 1: Check power and network
-ping 192.168.1.50
-ping 192.168.1.5
+ping 192.168.1.60
+ping 192.168.1.6
 
 # Step 2: Check services
 sudo systemctl status nginx

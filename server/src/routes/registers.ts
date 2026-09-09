@@ -17,8 +17,10 @@ router.get('/', async (_req, res) => {
       '28024': await modbusService.readFloat(r.AXIS_SPEED.AXIS2),
       '28026': await modbusService.readFloat(r.AXIS_SPEED.AXIS3),
       '28028': await modbusService.readFloat(r.AXIS_SPEED.AXIS4),
-      '2000': await modbusService.readFloat(r.WIDTH.EXPAND),
-      '2004': await modbusService.readFloat(r.WIDTH.CONTRACT),
+      '2000': await modbusService.readRegister(r.STEPPER.SPEED1),
+      '2002': await modbusService.readRegister(r.STEPPER.DISTANCE1),
+      '2004': await modbusService.readRegister(r.STEPPER.SPEED2),
+      '2006': await modbusService.readRegister(r.STEPPER.DISTANCE2),
     }
 
     const response: ApiResponse = {

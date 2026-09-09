@@ -46,8 +46,6 @@ class PollingService {
             speed2: state.speed2,
             speed3: state.speed3,
             speed4: state.speed4,
-            widthGap: state.widthGap,
-            widthOffset: state.widthOffset,
           },
           timestamp: new Date().toISOString(),
         }

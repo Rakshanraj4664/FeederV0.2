@@ -36,20 +36,23 @@ export function ProfileSection() {
     setActiveProfileId(profile.id)
   }
 
+  const migrateConveyor = (v: number) => v > 50 ? Math.round(v / 100) : v
+
   const handleSet = async (profile: Profile) => {
     const modifiers = profile.rollers.map(r => r.modifier)
     const highModifiers = profile.rollers.map(r => r.highModifier ?? 0)
-    useMachineStore.getState().loadRollerValues(modifiers, highModifiers, profile.conveyorSpeed)
+    const conveyor = migrateConveyor(profile.conveyorSpeed)
+    useMachineStore.getState().loadRollerValues(modifiers, highModifiers, conveyor)
 
     try {
       for (let i = 0; i < 4; i++) {
         await setRollerSpeed(i + 1, profile.rollers[i].modifier, profile.rollers[i].highModifier ?? 0)
       }
-      await writeConveyorSpeed(profile.conveyorSpeed)
+      await writeConveyorSpeed(conveyor)
       setPendingProfile(null)
       toast('success', `Profile "${profile.name}" applied to PLC`)
     } catch {
-      setPendingProfile(profile)
+      setPendingProfile({ ...profile, conveyorSpeed: conveyor })
       toast('info', `Profile "${profile.name}" set locally — will sync when PLC reconnects`)
     }
   }

@@ -79,7 +79,7 @@ export function ProfileEditorModal({ profileName, initialRollers, initialConveyo
           <div className="mt-4 mb-2">
             <ConveyorCard
               value={conveyor}
-              onValueChange={(v) => setConveyor(Math.min(9999, Math.max(0, Math.round(v))))}
+              onValueChange={(v) => setConveyor(Math.min(50, Math.max(0, Math.round(v))))}
               hideSet
             />
           </div>

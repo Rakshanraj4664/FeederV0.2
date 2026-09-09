@@ -38,7 +38,9 @@ export const REGISTER_ADDRESSES = [
   { address: 28024, name: 'Axis 2 Speed', group: 'speed' as const },
   { address: 28026, name: 'Axis 3 Speed', group: 'speed' as const },
   { address: 28028, name: 'Axis 4 Speed', group: 'speed' as const },
-  { address: 2000, name: 'Width Expand', group: 'width' as const },
-  { address: 2004, name: 'Width Contract', group: 'width' as const },
+  { address: 2000, name: 'Stepper 1 Speed', group: 'stepper' as const },
+  { address: 2002, name: 'Stepper 1 Distance', group: 'stepper' as const },
+  { address: 2004, name: 'Stepper 2 Speed', group: 'stepper' as const },
+  { address: 2006, name: 'Stepper 2 Distance', group: 'stepper' as const },
   { address: 20027, name: 'Conveyor Speed', group: 'conveyor' as const },
 ] as const

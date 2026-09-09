@@ -137,7 +137,6 @@ export class ModbusService {
     mc1: number; mc2: number; mc3: number; mc4: number
     mc1High: number; mc2High: number; mc3High: number; mc4High: number
     speed1: number; speed2: number; speed3: number; speed4: number
-    widthGap: number; widthOffset: number
     conveyor: number
   }> {
     const r = CONFIG.REGISTERS
@@ -153,25 +152,78 @@ export class ModbusService {
     const speed2 = await this.readFloat(r.AXIS_SPEED.AXIS2)
     const speed3 = await this.readFloat(r.AXIS_SPEED.AXIS3)
     const speed4 = await this.readFloat(r.AXIS_SPEED.AXIS4)
-    const widthGap = await this.readFloat(r.WIDTH.EXPAND)
-    const widthOffset = await this.readFloat(r.WIDTH.CONTRACT)
     const rawConveyor = await this.readRegister(r.CONVEYOR)
-    const conveyor = Math.min(r.CONVEYOR_MAX, Math.max(r.CONVEYOR_MIN, Math.round(rawConveyor)))
-    return { mc1, mc2, mc3, mc4, mc1High, mc2High, mc3High, mc4High, speed1, speed2, speed3, speed4, widthGap, widthOffset, conveyor }
+    const rawConveyorClamped = Math.min(r.CONVEYOR_MAX, Math.max(r.CONVEYOR_MIN, Math.round(rawConveyor)))
+    const conveyor = Math.round(rawConveyorClamped / 100)
+    return { mc1, mc2, mc3, mc4, mc1High, mc2High, mc3High, mc4High, speed1, speed2, speed3, speed4, conveyor }
   }
 
   async readMachineState(): Promise<{
     speed1: number; speed2: number; speed3: number; speed4: number
-    widthGap: number; widthOffset: number
   }> {
     const r = CONFIG.REGISTERS
     const speed1 = await this.readFloat(r.AXIS_SPEED.AXIS1)
     const speed2 = await this.readFloat(r.AXIS_SPEED.AXIS2)
     const speed3 = await this.readFloat(r.AXIS_SPEED.AXIS3)
     const speed4 = await this.readFloat(r.AXIS_SPEED.AXIS4)
-    const widthGap = await this.readFloat(r.WIDTH.EXPAND)
-    const widthOffset = await this.readFloat(r.WIDTH.CONTRACT)
-    return { speed1, speed2, speed3, speed4, widthGap, widthOffset }
+    return { speed1, speed2, speed3, speed4 }
+  }
+
+  async writeCoil(address: number, state: boolean): Promise<boolean> {
+    if (this._connected !== 'connected') throw new Error('PLC not connected')
+    try {
+      await this.client.writeCoil(address, state)
+      logger.info('modbus', `Write coil ${address} = ${state}`)
+      return true
+    } catch (err) {
+      logger.error('modbus', `Failed to write coil ${address}`, err)
+      this._connected = 'error'
+      this.scheduleReconnect()
+      throw err
+    }
+  }
+
+  async readStepperParams(): Promise<{
+    speed1: number; distance1: number; speed2: number; distance2: number
+  }> {
+    const s = CONFIG.REGISTERS.STEPPER
+    const speed1 = await this.readRegister(s.SPEED1)
+    const distance1 = await this.readRegister(s.DISTANCE1)
+    const speed2 = await this.readRegister(s.SPEED2)
+    const distance2 = await this.readRegister(s.DISTANCE2)
+    return { speed1, distance1, speed2, distance2 }
+  }
+
+  async writeStepperParams(
+    speed1: number, distance1: number,
+    speed2: number, distance2: number
+  ): Promise<void> {
+    const s = CONFIG.REGISTERS.STEPPER
+    await this.writeRegister(s.SPEED1, Math.round(speed1))
+    await this.writeRegister(s.DISTANCE1, Math.round(distance1))
+    await this.writeRegister(s.SPEED2, Math.round(speed2))
+    await this.writeRegister(s.DISTANCE2, Math.round(distance2))
+    logger.info('modbus', `Stepper params written (speed: ${speed1}/${speed2}, dist: ${distance1}/${distance2})`)
+  }
+
+  async triggerStepperCommand(
+    command: 'expand' | 'contract' | 'left' | 'right',
+    speed1: number, distance1: number,
+    speed2: number, distance2: number
+  ): Promise<void> {
+    const s = CONFIG.REGISTERS.STEPPER
+    const coils = CONFIG.REGISTERS.COMMAND_COILS
+
+    await this.writeRegister(s.SPEED1, Math.round(speed1))
+    await this.writeRegister(s.DISTANCE1, Math.round(distance1))
+    await this.writeRegister(s.SPEED2, Math.round(speed2))
+    await this.writeRegister(s.DISTANCE2, Math.round(distance2))
+
+    const coilAddr = coils[command.toUpperCase() as keyof typeof coils] as number
+    await this.writeCoil(coilAddr, true)
+    setTimeout(() => {
+      this.writeCoil(coilAddr, false).catch(() => {})
+    }, 150)
   }
 
   async writeAxisSpeed(axis: number, value: number): Promise<boolean> {

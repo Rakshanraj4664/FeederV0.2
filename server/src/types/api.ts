@@ -33,7 +33,5 @@ export interface MachineStateResponse {
     axis3: number
     axis4: number
   }
-  widthGap: number
-  widthOffset: number
   conveyor: number
 }

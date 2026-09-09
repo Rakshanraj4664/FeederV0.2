@@ -6,7 +6,7 @@
   +------------------+         Ethernet (LAN)          +------------------+
   |                  |   =========================>    |                  |
   |  Operator Tablet |   HTTP (80) / WS (5000)         |  Raspberry Pi 4  |
-  |  10" Touchscreen |   <=========================    |  192.168.1.50    |
+  |  10" Touchscreen |   <=========================    |  192.168.1.60    |
   |  (DHCP Assigned) |                                  |                  |
   +------------------+                                  +--------+---------+
                                                                    |
@@ -16,7 +16,7 @@
                                                              +-------v--------+
                                                              |                |
                                                              |  Delta AS PLC  |
-                                                             |  192.168.1.5   |
+                                                             |  192.168.1.6   |
                                                              |  Modbus Server |
                                                              +----------------+
 ```
@@ -215,8 +215,8 @@
 ```
   docker-compose.yml
        |
-       +-- feeder-backend  (port 5000, static IP 192.168.1.50)
-       +-- feeder-frontend (port 80,  Nginx, static IP 192.168.1.51)
+       +-- feeder-backend  (port 5000, static IP 192.168.1.60)
+       +-- feeder-frontend (port 80,  Nginx, static IP 192.168.1.61)
 ```
 
 Both containers share the `feeder-net` bridge network on subnet `192.168.1.0/24`.

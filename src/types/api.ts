@@ -36,18 +36,11 @@ export interface MachineStateResponse {
     axis3: number
     axis4: number
   }
-  widthGap: number
-  widthOffset: number
   conveyor: number
 }
 
 export interface SpeedWriteRequest {
   value: number
-}
-
-export interface WidthWriteRequest {
-  gap: number
-  offset: number
 }
 
 export interface WebSocketMessage {

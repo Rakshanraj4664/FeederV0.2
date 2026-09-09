@@ -21,7 +21,9 @@ export const API_ENDPOINTS = {
   SPEED_SET_MC3: '/speed/set/mc3',
   SPEED_SET_MC4: '/speed/set/mc4',
   CONVEYOR: '/speed/conveyor',
-  WIDTH: '/width',
+  STEPPER: '/stepper',
+  STEPPER_PARAMS: '/stepper/params',
+  STEPPER_COMMAND: '/stepper/command',
   EMERGENCY: '/machine/emergency',
   PROFILES: '/profiles',
 } as const

@@ -1,6 +1,6 @@
 # API Documentation
 
-Base URL: `http://192.168.1.50:5000/api` (production) or `http://localhost:5000/api` (development, proxied through Vite).
+Base URL: `http://192.168.1.60:5000/api` (production) or `http://localhost:5000/api` (development, proxied through Vite).
 
 All endpoints return JSON with the following envelope:
 
@@ -34,8 +34,8 @@ Returns system status, PLC connection state, and configuration.
     "whitelistCount": 3,
     "activeSessions": 1,
     "config": {
-      "plcIp": "192.168.1.5",
-      "piIp": "192.168.1.50",
+      "plcIp": "192.168.1.6",
+      "piIp": "192.168.1.60",
       "pollInterval": 100
     }
   },
@@ -271,7 +271,7 @@ Lightweight health check (no PLC interaction).
 ### Connection
 
 ```
-ws://192.168.1.50:5000/ws    (production)
+ws://192.168.1.60:5000/ws    (production)
 ws://localhost:5000/ws         (development — proxied)
 ```
 

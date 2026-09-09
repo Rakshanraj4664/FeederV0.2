@@ -60,8 +60,22 @@ export async function emergencyStop(): Promise<ApiResponse> {
   return data
 }
 
-export async function writeWidth(gap: number, offset: number): Promise<ApiResponse> {
-  const { data } = await client.post(API_ENDPOINTS.WIDTH, { gap, offset })
+export async function getStepperParams(): Promise<ApiResponse<{ speed1: number; distance1: number; speed2: number; distance2: number }>> {
+  const { data } = await client.get(API_ENDPOINTS.STEPPER)
+  return data
+}
+
+export async function writeStepperParams(params: {
+  speed1: number; distance1: number; speed2: number; distance2: number
+}): Promise<ApiResponse> {
+  const { data } = await client.post(API_ENDPOINTS.STEPPER_PARAMS, params)
+  return data
+}
+
+export async function triggerStepperCommand(params: {
+  command: string; speed1: number; distance1: number; speed2: number; distance2: number
+}): Promise<ApiResponse> {
+  const { data } = await client.post(API_ENDPOINTS.STEPPER_COMMAND, params)
   return data
 }
 

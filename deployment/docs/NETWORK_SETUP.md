@@ -27,7 +27,7 @@ Network architecture, static IP configuration, firewall rules, and VLAN isolatio
 │  │  Tablet  │        │ Raspberry Pi │       │   PLC    │   │
 │  │ (Client) │        │   Feeder     │       │ Modbus   │   │
 │  │          │        │   HMI Host   │       │ Server   │   │
-│  │ DHCP     │◄──────▶│ 192.168.1.50 │◄─────▶│ 192.168. │   │
+│  │ DHCP     │◄──────▶│ 192.168.1.60 │◄─────▶│ 192.168. │   │
 │  │ or Static│  HTTP  │  (Static)    │ Modbus│  1.5     │   │
 │  │          │  WS    │              │ TCP   │ (Static) │   │
 │  └──────────┘        └──────────────┘       └──────────┘   │
@@ -61,8 +61,8 @@ Network architecture, static IP configuration, firewall rules, and VLAN isolatio
 
 | Device | IP Address | Subnet | Gateway | Purpose |
 |--------|-----------|--------|---------|---------|
-| Raspberry Pi | `192.168.1.50` | `/24` | `192.168.1.1` | HMI web server |
-| PLC | `192.168.1.5` | `/24` | `192.168.1.1` (or none) | Modbus TCP target |
+| Raspberry Pi | `192.168.1.60` | `/24` | `192.168.1.1` | HMI web server |
+| PLC | `192.168.1.6` | `/24` | `192.168.1.1` (or none) | Modbus TCP target |
 | Network Gateway | `192.168.1.1` | `/24` | — | Router / L3 switch |
 
 ### DHCP Pool (for Tablets and other clients)
@@ -71,7 +71,7 @@ Network architecture, static IP configuration, firewall rules, and VLAN isolatio
 |-------|-------|
 | `192.168.1.100` – `192.168.1.200` | DHCP-assigned tablet addresses |
 | `192.168.1.1` – `192.168.1.49` | Reserved for infrastructure |
-| `192.168.1.50` – `192.168.1.99` | Reserved for static devices |
+| `192.168.1.60` – `192.168.1.99` | Reserved for static devices |
 
 ### DNS Configuration
 
@@ -113,7 +113,7 @@ Add at the end:
 
 ```
 interface eth0
-static ip_address=192.168.1.50/24
+static ip_address=192.168.1.60/24
 static routers=192.168.1.1
 static domain_name_servers=8.8.8.8 1.1.1.1
 ```
@@ -124,14 +124,14 @@ static domain_name_servers=8.8.8.8 1.1.1.1
 sudo reboot
 # After reboot:
 hostname -I
-# Expected: 192.168.1.50
+# Expected: 192.168.1.60
 ```
 
 ### 3.2 — PLC Static IP
 
 Configure the PLC's static IP according to its manufacturer's instructions. Ensure:
 
-- IP: `192.168.1.5`
+- IP: `192.168.1.6`
 - Subnet mask: `255.255.255.0`
 - Gateway: `192.168.1.1` (or leave blank if isolated)
 - The PLC should be configured **before** connecting it to the production network
@@ -146,7 +146,7 @@ ip addr show
 hostname -I
 
 # Confirm PLC is reachable
-ping -c 3 192.168.1.5
+ping -c 3 192.168.1.6
 
 # Check ARP table
 arp -a
@@ -159,7 +159,7 @@ Expected route output:
 
 ```
 default via 192.168.1.1 dev eth0
-192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.50
+192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.60
 ```
 
 ---
@@ -194,7 +194,7 @@ sudo ufw --force enable
 
 ```bash
 # Allow Modbus TCP to PLC
-sudo ufw allow out on eth0 to 192.168.1.5 port 502 proto tcp comment 'Modbus TCP to PLC'
+sudo ufw allow out on eth0 to 192.168.1.6 port 502 proto tcp comment 'Modbus TCP to PLC'
 
 # Allow DNS (for outbound name resolution if internet is available)
 sudo ufw allow out to any port 53 proto udp comment 'DNS'
@@ -228,7 +228,7 @@ To                         Action      From
 5000/tcp                   ALLOW IN    127.0.0.1
 
 Outbound:
-502/tcp                    ALLOW OUT   192.168.1.5 (eth0)
+502/tcp                    ALLOW OUT   192.168.1.6 (eth0)
 53/udp                     ALLOW OUT   Anywhere
 123/udp                    ALLOW OUT   Anywhere
 80,443/tcp                 ALLOW OUT   Anywhere
@@ -241,7 +241,7 @@ Outbound:
 | 22 | TCP | SSH | Inbound | `192.168.1.0/24` → Pi |
 | 80 | TCP | HTTP (HMI) | Inbound | `192.168.1.0/24` → Pi |
 | 5000 | TCP | Backend API | Local | `127.0.0.1` → Pi |
-| 502 | TCP | Modbus | Outbound | Pi → `192.168.1.5` |
+| 502 | TCP | Modbus | Outbound | Pi → `192.168.1.6` |
 | 53 | UDP | DNS | Outbound | Pi → Any |
 | 123 | UDP | NTP | Outbound | Pi → Any |
 | 443 | TCP | HTTPS | Outbound | Pi → Any (updates) |
@@ -302,14 +302,14 @@ Access Control List (ACL) on the switch:
 
 ```
 # Allow HMI traffic from tablet to Pi
-permit tcp 192.168.1.0/24 192.168.1.50/32 eq 80
-permit tcp 192.168.1.0/24 192.168.1.50/32 eq 443
+permit tcp 192.168.1.0/24 192.168.1.60/32 eq 80
+permit tcp 192.168.1.0/24 192.168.1.60/32 eq 443
 
 # Allow Modbus from Pi to PLC
-permit tcp 192.168.1.50/32 192.168.1.5/32 eq 502
+permit tcp 192.168.1.60/32 192.168.1.6/32 eq 502
 
 # Allow SSH from management station to Pi
-permit tcp 10.0.0.100/32 192.168.1.50/32 eq 22
+permit tcp 10.0.0.100/32 192.168.1.60/32 eq 22
 
 # Deny all other traffic between VLANs
 deny ip any any
@@ -357,11 +357,11 @@ Run these from the Raspberry Pi:
 ping -c 3 192.168.1.1
 
 # Can we reach the PLC?
-ping -c 3 192.168.1.5
+ping -c 3 192.168.1.6
 
 # Is port 502 open on the PLC?
-nc -zv 192.168.1.5 502
-# Expected: Connection to 192.168.1.5 port 502 [tcp/mbap] succeeded!
+nc -zv 192.168.1.6 502
+# Expected: Connection to 192.168.1.6 port 502 [tcp/mbap] succeeded!
 
 # Is nginx listening on port 80?
 sudo ss -tlnp | grep ':80'
@@ -377,7 +377,7 @@ ping -c 3 8.8.8.8
 
 ```bash
 # Open a browser and navigate to:
-http://192.168.1.50
+http://192.168.1.60
 
 # The HMI dashboard should load and show live data
 ```

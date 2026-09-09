@@ -22,7 +22,7 @@ Configuration guide for Modbus TCP communication between the Raspberry Pi HMI an
 | Parameter | Value | Description |
 |-----------|-------|-------------|
 | Protocol | Modbus TCP | Standard Modbus over Ethernet |
-| PLC IP | `192.168.1.5` | Configured in `server/src/config.ts` |
+| PLC IP | `192.168.1.6` | Configured in `server/src/config.ts` |
 | PLC Port | `502` | Default Modbus TCP port |
 | Timeout | `2000 ms` | Socket timeout on the Modbus client |
 | Reconnect interval | `3000 ms` | Time between reconnection attempts |
@@ -37,7 +37,7 @@ The application uses the [`modbus-serial`](https://www.npmjs.com/package/modbus-
 import ModbusRTU from 'modbus-serial'
 
 const client = new ModbusRTU()
-await client.connectTCP('192.168.1.5', { port: 502 })
+await client.connectTCP('192.168.1.6', { port: 502 })
 client.setTimeout(2000)
 ```
 
@@ -49,7 +49,7 @@ The PLC must:
 - Support reading holding registers (function code 0x03)
 - Support writing single holding registers (function code 0x06)
 - Have the register map (Section 2) configured in its memory
-- Have a static IP of `192.168.1.5`
+- Have a static IP of `192.168.1.6`
 
 ### 1.4 — Modbus Function Codes Used
 
@@ -217,29 +217,29 @@ sudo apt install -y modbus-cli
 
 ```bash
 # Read a single holding register (e.g., MC1 at address 20002)
-modbus-cli read -h 192.168.1.5 -p 502 -a 20002 -c 1 -t holding
+modbus-cli read -h 192.168.1.6 -p 502 -a 20002 -c 1 -t holding
 
 # Read multiple registers (4 modifiers starting at 20002)
-modbus-cli read -h 192.168.1.5 -p 502 -a 20002 -c 4 -t holding
+modbus-cli read -h 192.168.1.6 -p 502 -a 20002 -c 4 -t holding
 
 # Read axis speeds (4 registers starting at 28022)
-modbus-cli read -h 192.168.1.5 -p 502 -a 28022 -c 4 -t holding
+modbus-cli read -h 192.168.1.6 -p 502 -a 28022 -c 4 -t holding
 
 # Read width registers (2 registers starting at 2000)
-modbus-cli read -h 192.168.1.5 -p 502 -a 2000 -c 2 -t holding
+modbus-cli read -h 192.168.1.6 -p 502 -a 2000 -c 2 -t holding
 ```
 
 ### 4.3 — Writing Registers
 
 ```bash
 # Write a value to a single holding register
-modbus-cli write -h 192.168.1.5 -p 502 -a 20002 -t holding 5000
+modbus-cli write -h 192.168.1.6 -p 502 -a 20002 -t holding 5000
 
 # Set all modifiers
-modbus-cli write -h 192.168.1.5 -p 502 -a 20002 -t holding 2500
-modbus-cli write -h 192.168.1.5 -p 502 -a 20008 -t holding 2500
-modbus-cli write -h 192.168.1.5 -p 502 -a 20014 -t holding 2500
-modbus-cli write -h 192.168.1.5 -p 502 -a 20020 -t holding 2500
+modbus-cli write -h 192.168.1.6 -p 502 -a 20002 -t holding 2500
+modbus-cli write -h 192.168.1.6 -p 502 -a 20008 -t holding 2500
+modbus-cli write -h 192.168.1.6 -p 502 -a 20014 -t holding 2500
+modbus-cli write -h 192.168.1.6 -p 502 -a 20020 -t holding 2500
 ```
 
 ### 4.4 — Using the Application API
@@ -248,15 +248,15 @@ Alternatively, use the HMI's REST API to test:
 
 ```bash
 # Read current machine state
-curl http://192.168.1.50/api/machine
+curl http://192.168.1.60/api/machine
 
 # Write a modifier value
-curl -X POST http://192.168.1.50/api/speed \
+curl -X POST http://192.168.1.60/api/speed \
   -H "Content-Type: application/json" \
   -d '{"axis": 1, "value": 5000}'
 
 # Read status
-curl http://192.168.1.50/api/status
+curl http://192.168.1.60/api/status
 ```
 
 ### 4.5 — Automated Test Script
@@ -265,7 +265,7 @@ Save this as `test-modbus.sh`:
 
 ```bash
 #!/bin/bash
-PLC="192.168.1.5"
+PLC="192.168.1.6"
 
 echo "=== Modbus Connectivity Test ==="
 echo "Testing connection to PLC at $PLC:502..."
@@ -321,7 +321,7 @@ ModbusService.connectPLC()
        ├── Mock Mode? ──▶ Return true (development only)
        │
        ▼
-client.connectTCP('192.168.1.5', { port: 502 })
+client.connectTCP('192.168.1.6', { port: 502 })
        │
        ├── Success ──▶ connected = true, start polling
        │
@@ -340,10 +340,10 @@ client.connectTCP('192.168.1.5', { port: 502 })
 
 ```bash
 # Step 1: Verify physical connection
-ping 192.168.1.5
+ping 192.168.1.6
 
 # Step 2: Check if Modbus port is open
-nc -zv 192.168.1.5 502
+nc -zv 192.168.1.6 502
 
 # Step 3: Check firewall on Pi
 sudo ufw status
@@ -400,16 +400,16 @@ pm2 logs feeder-backend --lines 50
 grep -i "modbus\|plc\|register" /opt/feeder-hmi/server/logs/backend-out.log
 
 # Check backend health
-curl http://192.168.1.50/api/health
+curl http://192.168.1.60/api/health
 
 # Check detailed status (includes PLC connection state)
-curl http://192.168.1.50/api/status
+curl http://192.168.1.60/api/status
 
 # Read all machine state
-curl http://192.168.1.50/api/machine
+curl http://192.168.1.60/api/machine
 
 # Continuous monitoring
-watch -n 1 'curl -s http://192.168.1.50/api/machine | python3 -m json.tool'
+watch -n 1 'curl -s http://192.168.1.60/api/machine | python3 -m json.tool'
 ```
 
 ### 5.4 — PLC-Side Checklist
@@ -420,7 +420,7 @@ watch -n 1 'curl -s http://192.168.1.50/api/machine | python3 -m json.tool'
 | PLC in RUN mode | Set PLC to RUN (not STOP/PROG) |
 | Modbus TCP enabled | Enable Modbus TCP server in PLC config |
 | Modbus port 502 open | Verify PLC firewall or port configuration |
-| IP address correct | `192.168.1.5` with subnet `255.255.255.0` |
+| IP address correct | `192.168.1.6` with subnet `255.255.255.0` |
 | Registers mapped | Verify D20002–D20020, D28022–D28028, D2000, D2004 are defined |
 | Register access | Modifier registers must be writeable; speed/width registers must be readable |
 | Scan cycle time | Ensure PLC scan time is not exceeding 100ms (polling interval) |
@@ -429,16 +429,16 @@ watch -n 1 'curl -s http://192.168.1.50/api/machine | python3 -m json.tool'
 
 ```bash
 # Check for IP conflicts
-arp-scan --localnet 2>/dev/null | grep "192.168.1.5"
+arp-scan --localnet 2>/dev/null | grep "192.168.1.6"
 
-# If another device responds on 192.168.1.5, you have an IP conflict
+# If another device responds on 192.168.1.6, you have an IP conflict
 
 # Check for packet loss
-ping -c 100 -i 0.1 192.168.1.5
+ping -c 100 -i 0.1 192.168.1.6
 # Look for any lost packets
 
 # Trace route to PLC
-traceroute 192.168.1.5
+traceroute 192.168.1.6
 # Should be 1 hop (direct connection)
 ```
 

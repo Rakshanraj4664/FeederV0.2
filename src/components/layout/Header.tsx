@@ -1,7 +1,6 @@
 import { useMachineStore } from '@/store/machineStore'
 import { LABELS } from '@/constants/machine'
-import { triggerEmergencyStop } from '@/services/plc'
-import { setRollerSpeed, writeConveyorSpeed } from '@/services/api'
+import { setRollerSpeed, writeConveyorSpeed, emergencyStop as apiEmergencyStop } from '@/services/api'
 import { Wifi, WifiOff, Cpu, MonitorOff, OctagonAlert, Play, Square, ShieldCheck } from 'lucide-react'
 
 function StatusBadge({ online, labelOn, labelOff, IconOn, IconOff }: {
@@ -33,7 +32,7 @@ export function Header() {
     store.setSavedConveyor(store.conveyorValue)
 
     try {
-      await triggerEmergencyStop()
+      await apiEmergencyStop()
     } catch {
       // backend write failed, still reset UI locally
     }

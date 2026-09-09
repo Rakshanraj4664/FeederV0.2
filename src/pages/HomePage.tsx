@@ -42,7 +42,7 @@ export function HomePage() {
         setRollerHighModifier(1, res.data.highRollers.mc2)
         setRollerHighModifier(2, res.data.highRollers.mc3)
         setRollerHighModifier(3, res.data.highRollers.mc4)
-        setConveyorValue(Math.min(9999, Math.max(0, Math.round(res.data.conveyor))))
+        setConveyorValue(Math.min(50, Math.max(0, Math.round(res.data.conveyor))))
       }
     })
 
@@ -102,7 +102,7 @@ export function HomePage() {
   }, [setRollerHighModifier])
 
   const handleConveyorChange = useCallback((value: number) => {
-    setConveyorValue(Math.min(9999, Math.max(0, Math.round(value))))
+    setConveyorValue(Math.min(50, Math.max(0, Math.round(value))))
   }, [setConveyorValue])
 
   const handleConveyorSet = useCallback(async () => {
